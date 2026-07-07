@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Colorado Trail Partnership Atlas — PMR</title>
+<style>
+  /* ============================================================
+     THEME SYSTEM — three schemes toggled via data-theme on <html>
+     Palette metaphor: contour lines on a topo map.
+     ============================================================ */
+  :root {
+    --font-display: 'Georgia', 'Times New Roman', serif;
+    --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: 'SF Mono', 'Consolas', 'Monaco', monospace;
+    --radius: 3px;
+    --maxw: 1180px;
+    --transition: 0.25s ease;
+  }
+
+  /* Scheme 1: SANDSTONE — Front Range foothills, gambel oak, iron-oxide dirt */
+  html[data-theme="sandstone"] {
+    --bg: #efe7d8;
+    --bg-panel: #f8f3e9;
+    --bg-panel-alt: #f2ead9;
+    --ink: #3a2f26;
+    --ink-soft: #6b5d4f;
+    --line: #d8c9b0;
+    --line-strong: #b79f7d;
+    --accent: #a8501f;
+    --accent-soft: #c9793f;
+    --yes: #4a6b3a;
+    --yes-bg: #dfe7cf;
+    --no: #9c3320;
+    --no-bg: #f1d9ce;
+    --partial: #8a6d1f;
+    --partial-bg: #ece0bd;
+    --shadow: rgba(90, 70, 45, 0.14);
+  }
+
+  /* Scheme 2: ALPENGLOW — dusk over the Divide, deep indigo + warm rim light */
+  html[data-theme="alpenglow"] {
+    --bg: #16181f;
+    --bg-panel: #1e212b;
+    --bg-panel-alt: #242835;
+    --ink: #ece7dd;
+    --ink-soft: #a39e94;
+    --line: #333949;
+    --line-strong: #4a5265;
+    --accent: #e8834a;
+    --accent-soft: #f0a978;
+    --yes: #8fc474;
+    --yes-bg: #263528;
+    --no: #e88a6f;
+    --no-bg: #382322;
+    --partial: #e0c06a;
+    --partial-bg: #35301c;
+    --shadow: rgba(0, 0, 0, 0.45);
+  }
+
+  /* Scheme 3: MERIDIAN — high-noon USGS quad sheet, clean paper + survey-blue */
+  html[data-theme="meridian"] {
+    --bg: #eef1f3;
+    --bg-panel: #ffffff;
+    --bg-panel-alt: #f4f7f9;
+    --ink: #1c2733;
+    --ink-soft: #5a6b78;
+    --line: #d3dce2;
+    --line-strong: #a9bac6;
+    --accent: #1f6f8b;
+    --accent-soft: #3d93ad;
+    --yes: #2f7d4f;
+    --yes-bg: #dcefe2;
+    --no: #b23a2e;
+    --no-bg: #f6ddd8;
+    --partial: #9a6d10;
+    --partial-bg: #f4e8c8;
+    --shadow: rgba(30, 55, 75, 0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { transition: none !important; animation: none !important; }
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    transition: background var(--transition), color var(--transition);
+    padding: 0 20px 80px;
+  }
+
+  .wrap { max-width: var(--maxw); margin: 0 auto; }
+
+  /* ---------- Top bar ---------- */
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 20px 0 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  .backlink {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 12px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    transition: var(--transition);
+  }
+  .backlink:hover { color: var(--accent); border-color: var(--accent); }
+  .backlink .arw { transition: transform var(--transition); }
+  .backlink:hover .arw { transform: translateX(-3px); }
+
+  .theme-toggle { display: flex; gap: 6px; align-items: center; }
+  .theme-toggle .lbl {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    margin-right: 4px;
+  }
+  .swatch {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: 2px solid var(--line-strong);
+    cursor: pointer;
+    padding: 0;
+    transition: var(--transition);
+    position: relative;
+  }
+  .swatch:hover { transform: scale(1.12); }
+  .swatch[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 3px var(--shadow); }
+  .swatch:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .sw-sandstone { background: linear-gradient(135deg, #efe7d8 50%, #a8501f 50%); }
+  .sw-alpenglow { background: linear-gradient(135deg, #1e212b 50%, #e8834a 50%); }
+  .sw-meridian  { background: linear-gradient(135deg, #ffffff 50%, #1f6f8b 50%); }
+
+  /* ---------- Hero ---------- */
+  .hero { padding: 52px 0 30px; position: relative; }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 18px;
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(1.55rem, 3.6vw, 2.5rem);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    max-width: 18ch;
+    margin-bottom: 20px;
+  }
+  h1 .em { color: var(--accent); font-style: italic; }
+  .lede {
+    font-size: clamp(1.02rem, 1.6vw, 1.22rem);
+    color: var(--ink-soft);
+    max-width: 60ch;
+  }
+
+  /* thesis strip: the argument in one glance */
+  .thesis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    margin: 40px 0 8px;
+    overflow: hidden;
+  }
+  .thesis-cell { background: var(--bg-panel); padding: 22px 20px; }
+  .thesis-num {
+    font-family: var(--font-display);
+    font-size: 2.4rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+  }
+  .thesis-lbl {
+    font-size: 0.86rem;
+    color: var(--ink-soft);
+    margin-top: 8px;
+    line-height: 1.4;
+  }
+
+  .coalition-note {
+    margin-top: 20px;
+    padding: 18px 20px;
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius);
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    max-width: 78ch;
+  }
+  .coalition-note a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: var(--transition); }
+  .coalition-note a:hover { border-bottom-color: var(--accent); }
+  .coalition-note strong { color: var(--ink); }
+
+  /* ---------- Section scaffolding ---------- */
+  section { margin-top: 60px; }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 8px; }
+  .sec-idx {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+  h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 3vw, 2.1rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .sec-sub { color: var(--ink-soft); max-width: 66ch; margin: 6px 0 26px; }
+
+  /* ---------- Controls ---------- */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 18px;
+    padding: 14px 16px;
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+  .ctrl-grp { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .ctrl-lbl {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    margin-right: 2px;
+  }
+  .chip {
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    padding: 6px 13px;
+    border: 1px solid var(--line-strong);
+    background: transparent;
+    color: var(--ink);
+    border-radius: 100px;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip[aria-pressed="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .chip:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .search {
+    flex: 1 1 160px;
+    min-width: 140px;
+    padding: 7px 12px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    background: var(--bg-panel-alt);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 0.86rem;
+  }
+  .search:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+
+  /* ---------- Table ---------- */
+  .table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 760px; }
+  thead th {
+    background: var(--bg-panel-alt);
+    text-align: left;
+    padding: 13px 14px;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-soft);
+    border-bottom: 2px solid var(--line-strong);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+  }
+  thead th:hover { color: var(--accent); }
+  thead th .sortcaret { opacity: 0.4; font-size: 0.7rem; margin-left: 3px; }
+  thead th[aria-sort="ascending"] .sortcaret,
+  thead th[aria-sort="descending"] .sortcaret { opacity: 1; color: var(--accent); }
+  tbody td { padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tbody tr { background: var(--bg-panel); transition: background var(--transition); }
+  tbody tr:hover { background: var(--bg-panel-alt); }
+  .town-name { font-weight: 600; font-size: 0.96rem; }
+  .town-note { font-size: 0.76rem; color: var(--ink-soft); margin-top: 3px; line-height: 1.4; }
+
+  .badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 3px 9px;
+    border-radius: 100px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .b-yes { background: var(--yes-bg); color: var(--yes); }
+  .b-no { background: var(--no-bg); color: var(--no); }
+  .b-partial { background: var(--partial-bg); color: var(--partial); }
+
+  .miles-val { font-family: var(--font-mono); font-weight: 600; font-size: 0.95rem; }
+  .miles-bar {
+    height: 5px;
+    background: var(--accent-soft);
+    border-radius: 3px;
+    margin-top: 5px;
+    max-width: 120px;
+    opacity: 0.75;
+  }
+  .conf {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.05em;
+    padding: 2px 7px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line-strong);
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+  .conf.high { border-color: var(--yes); color: var(--yes); }
+  .conf.med { border-color: var(--partial); color: var(--partial); }
+  .conf.low { border-color: var(--ink-soft); }
+
+  .row-hidden { display: none; }
+  .empty-note { padding: 30px; text-align: center; color: var(--ink-soft); font-style: italic; }
+
+  /* ---------- Compact view: trim rows to name / county / yes-no / miles / conf ---------- */
+  body.compact .town-note { display: none; }
+  body.compact tbody td { padding: 8px 14px; }
+  body.compact .miles-bar { display: none; }
+  body.compact .town-name { font-size: 0.9rem; }
+  body.compact table { min-width: 560px; }
+  /* org column collapses in compact to keep the table scannable */
+  body.compact .col-org { display: none; }
+
+  .caveat {
+    margin-top: 16px;
+    padding: 16px 18px;
+    background: var(--bg-panel);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius);
+    font-size: 0.86rem;
+    color: var(--ink-soft);
+  }
+  .caveat strong { color: var(--ink); }
+
+  /* ---------- Prose (write-up) ---------- */
+  .prose { max-width: 72ch; }
+  .prose p { margin-bottom: 18px; font-size: 1.02rem; }
+  .prose h3 {
+    font-family: var(--font-display);
+    font-size: 1.28rem;
+    margin: 34px 0 12px;
+    letter-spacing: -0.01em;
+  }
+  .prose strong { color: var(--ink); font-weight: 700; }
+  .prose em { color: var(--accent); font-style: italic; }
+
+  /* case study cards */
+  .cases {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 16px;
+    margin: 28px 0 8px;
+  }
+  .case {
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 22px 20px;
+  }
+  .case-tag {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .case h4 {
+    font-family: var(--font-display);
+    font-size: 1.16rem;
+    margin-bottom: 4px;
+  }
+  .case-loc { font-size: 0.78rem; color: var(--ink-soft); margin-bottom: 12px; }
+  .case-stat {
+    font-family: var(--font-display);
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 3px;
+  }
+  .case-stat-lbl { font-size: 0.78rem; color: var(--ink-soft); margin-bottom: 14px; }
+  .case p { font-size: 0.9rem; color: var(--ink-soft); line-height: 1.55; }
+  .case p strong { color: var(--ink); }
+
+  /* pull quote / principle list */
+  .principles { list-style: none; margin: 20px 0; counter-reset: p; }
+  .principles li {
+    position: relative;
+    padding: 16px 0 16px 54px;
+    border-bottom: 1px solid var(--line);
+    counter-increment: p;
+  }
+  .principles li:last-child { border-bottom: none; }
+  .principles li::before {
+    content: counter(p, decimal-leading-zero);
+    position: absolute;
+    left: 0;
+    top: 16px;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .principles h4 { font-size: 1.02rem; margin-bottom: 3px; }
+  .principles p { font-size: 0.92rem; color: var(--ink-soft); }
+
+  .pullquote {
+    border-left: 3px solid var(--accent);
+    padding: 6px 0 6px 22px;
+    margin: 28px 0;
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    line-height: 1.4;
+    font-style: italic;
+    color: var(--ink);
+  }
+
+  /* ---------- Footer ---------- */
+  footer {
+    margin-top: 70px;
+    padding-top: 26px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+  }
+  .foot-brand { font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; }
+  .foot-brand span { color: var(--accent); }
+  .foot-meta { font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-soft); line-height: 1.7; }
+  .foot-meta a { color: var(--accent); text-decoration: none; }
+  .foot-meta a:hover { text-decoration: underline; }
+
+  .disclaimer {
+    margin-top: 24px;
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+    line-height: 1.55;
+    max-width: 80ch;
+  }
+
+  @media (max-width: 680px) {
+    body { padding: 0 14px 60px; }
+    .hero { padding: 32px 0 18px; }
+    h1 { font-size: clamp(1.4rem, 6vw, 1.9rem); }
+    .thesis-num { font-size: 1.9rem; }
+    .case-stat { font-size: 1.6rem; }
+
+    /* Controls stack cleanly and stay tappable */
+    .controls { padding: 12px; gap: 8px; }
+    .chip { padding: 8px 14px; font-size: 0.85rem; }   /* larger touch targets */
+    .search { flex-basis: 100%; order: -1; padding: 10px 12px; font-size: 16px; } /* 16px stops iOS zoom */
+    .view-grp { width: 100%; }
+
+    /* ---- Turn the table into stacked cards ---- */
+    .table-scroll { overflow: visible; border: none; }
+    #grid, #grid tbody, #grid tr, #grid td { display: block; width: 100%; }
+    #grid { min-width: 0 !important; }
+    #grid thead { position: absolute; left: -9999px; }  /* hide header row, cards are self-labeling */
+
+    #grid tbody tr {
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--line-strong);
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+      padding: 14px 16px 12px;
+      background: var(--bg-panel);
+      box-shadow: 0 1px 3px var(--shadow);
+    }
+    /* color the card's left edge by partnership status */
+    #grid tbody tr[data-status="yes"] { border-left-color: var(--yes); }
+    #grid tbody tr[data-status="no"] { border-left-color: var(--no); }
+
+    #grid tbody td { border: none !important; padding: 3px 0 !important; }
+
+    /* town name = card title */
+    #grid td:nth-child(1) { margin-bottom: 6px; }
+    .town-name { font-size: 1.08rem !important; }
+
+    /* label the remaining cells inline via data-label */
+    #grid td[data-label]::before {
+      content: attr(data-label);
+      display: inline-block;
+      width: 88px;
+      font-family: var(--font-mono);
+      font-size: 0.64rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ink-soft);
+      vertical-align: middle;
+    }
+    #grid td[data-label] { display: flex; align-items: center; gap: 4px; padding: 5px 0 !important; }
+    .miles-bar { display: none; }  /* redundant on cards */
+
+    /* compact mode on mobile just drops the note; cards already handle the rest */
+    body.compact #grid td:nth-child(1) { margin-bottom: 3px; }
+  }
+
+  @media (max-width: 400px) {
+    .topbar { gap: 10px; }
+    .backlink { font-size: 0.68rem; padding: 6px 9px; }
+    h1 { font-size: 1.32rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ TOP BAR ============ -->
+  <div class="topbar">
+    <a class="backlink" href="https://www.postmillenniumrenaissance.com">
+      <span class="arw">←</span> Post Millennium Renaissance
+    </a>
+    <div class="theme-toggle" role="group" aria-label="Color scheme">
+      <span class="lbl">Theme</span>
+      <button class="swatch sw-sandstone" data-set-theme="sandstone" aria-pressed="true" aria-label="Sandstone theme" title="Sandstone"></button>
+      <button class="swatch sw-alpenglow" data-set-theme="alpenglow" aria-pressed="false" aria-label="Alpenglow theme" title="Alpenglow"></button>
+      <button class="swatch sw-meridian" data-set-theme="meridian" aria-pressed="false" aria-label="Meridian theme" title="Meridian"></button>
+    </div>
+  </div>
+
+  <!-- ============ HERO ============ -->
+  <header class="hero">
+    <div class="eyebrow">Trail Advocacy · Colorado Front Range</div>
+    <h1>Who builds trails <span class="em">with</span> a partner — and who goes it alone.</h1>
+    <p class="lede">A survey of Front Range towns and the mountain-bike nonprofits they work with. The pattern is the argument: among communities where singletrack is even geographically possible, the ones that partner build more, build better, and unlock money the parks budget can't reach on its own.</p>
+
+    <div class="thesis">
+      <div class="thesis-cell">
+        <div class="thesis-num" id="t-total">—</div>
+        <div class="thesis-lbl">towns surveyed across 7 counties</div>
+      </div>
+      <div class="thesis-cell">
+        <div class="thesis-num" id="t-yes">—</div>
+        <div class="thesis-lbl">partner with a trail-advocacy nonprofit</div>
+      </div>
+      <div class="thesis-cell">
+        <div class="thesis-num">20+</div>
+        <div class="thesis-lbl">Colorado nonprofits under the COMTB coalition — including COMBA, MedWheel &amp; BMA</div>
+      </div>
+      <div class="thesis-cell">
+        <div class="thesis-num">2</div>
+        <div class="thesis-lbl">Douglas County foothills communities that still go it alone — Castle Rock &amp; Highlands Ranch</div>
+      </div>
+    </div>
+
+    <p class="coalition-note">
+      Nearly every mountain-bike trail nonprofit in this survey belongs to one umbrella group: the <a href="https://comtb.org" target="_blank" rel="noopener"><strong>Colorado Mountain Bike Coalition (COMTB)</strong></a> — a statewide coalition of 20+ nonprofit trail organizations whose members include COMBA, Medicine Wheel, and Boulder Mountainbike Alliance. When a town partners with one of these groups, it plugs into a statewide network of shared expertise, grant know-how, and political weight. See the <a href="https://comtb.org/colorado-trail-organizations/" target="_blank" rel="noopener">full member directory</a>.
+    </p>
+  </header>
+
+  <!-- ============ SECTION 01 — TABLE ============ -->
+  <section id="data">
+    <div class="sec-head">
+      <span class="sec-idx">01</span>
+      <h2>The partnership map</h2>
+    </div>
+    <p class="sec-sub">Sort any column by clicking its header. Filter by partnership status or county. Singletrack mileage is the softest data here — towns report it inconsistently and often blend paved paths into the total, so treat those figures as estimates and check the confidence flag.</p>
+
+    <div class="controls">
+      <div class="ctrl-grp">
+        <span class="ctrl-lbl">Partner</span>
+        <button class="chip" data-filter="status" data-val="all" aria-pressed="true">All</button>
+        <button class="chip" data-filter="status" data-val="yes" aria-pressed="false">Partners</button>
+        <button class="chip" data-filter="status" data-val="no" aria-pressed="false">No partner</button>
+      </div>
+      <div class="ctrl-grp">
+        <span class="ctrl-lbl">County</span>
+        <button class="chip" data-filter="county" data-val="all" aria-pressed="true">All</button>
+        <button class="chip" data-filter="county" data-val="Douglas" aria-pressed="false">Douglas</button>
+        <button class="chip" data-filter="county" data-val="Jefferson" aria-pressed="false">Jefferson</button>
+        <button class="chip" data-filter="county" data-val="Adams" aria-pressed="false">Adams</button>
+        <button class="chip" data-filter="county" data-val="Arapahoe" aria-pressed="false">Arapahoe</button>
+        <button class="chip" data-filter="county" data-val="El Paso" aria-pressed="false">El Paso</button>
+      </div>
+      <input class="search" id="search" type="search" placeholder="Search town or nonprofit…" aria-label="Search">
+      <div class="ctrl-grp view-grp">
+        <span class="ctrl-lbl">View</span>
+        <button class="chip" id="viewToggle" data-mode="full" aria-pressed="false">Compact</button>
+      </div>
+    </div>
+
+    <div class="table-scroll">
+      <table id="grid">
+        <thead>
+          <tr>
+            <th data-sort="town" data-type="str">Town / City <span class="sortcaret">↕</span></th>
+            <th data-sort="county" data-type="str">County <span class="sortcaret">↕</span></th>
+            <th data-sort="status" data-type="status">Partner? <span class="sortcaret">↕</span></th>
+            <th data-sort="org" data-type="str" class="col-org">Nonprofit partner <span class="sortcaret">↕</span></th>
+            <th data-sort="miles" data-type="num">Singletrack mi. <span class="sortcaret">↕</span></th>
+            <th data-sort="conf" data-type="conf">Confidence <span class="sortcaret">↕</span></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"><!-- injected --></tbody>
+      </table>
+    </div>
+    <div class="empty-note row-hidden" id="empty">No towns match those filters.</div>
+
+    <div class="caveat">
+      <strong>Reading the mileage column honestly.</strong> Several Jefferson County entries (Littleton, Morrison, Evergreen) reference trails in <em>Jeffco Open Space</em> parks near those towns — built with COMBA — rather than municipally owned trails. That distinction actually strengthens the case: the region's dominant land manager treats nonprofit partnership as standard practice. Note also that Highlands Ranch is marked <strong>No</strong> — its trails are managed by the HRCA, a homeowners association organized as a nonprofit, not a mountain-bike trail-advocacy organization like the COMTB member groups. The counter-examples that hold up against Castle Rock are Idaho Springs and Black Hawk — small towns that are their own primary land managers and still chose the partnership route.
+    </div>
+  </section>
+
+  <!-- ============ SECTION 02 — WHY (write-up) ============ -->
+  <section id="why">
+    <div class="sec-head">
+      <span class="sec-idx">02</span>
+      <h2>Why partnering is best practice</h2>
+    </div>
+    <p class="sec-sub">The case for working with a nonprofit trail organization — not just in Colorado, but as a pattern that has repeated across the country wherever trail networks have thrived.</p>
+
+    <div class="prose">
+      <p>A parks and recreation department can build trails in-house. The question is never whether it's <em>possible</em> — it's whether an in-house-only model can keep pace with a growing population, and whether it leaves money and labor on the table by refusing outside help. The evidence from communities across the country points one direction: the fastest-growing, best-regarded, most economically productive trail networks in America were almost all built through a public agency partnered with a nonprofit. Not one or the other. Both.</p>
+
+      <p>The reason is structural, and it comes down to four things a nonprofit brings that a municipal budget line generally cannot.</p>
+
+      <ul class="principles">
+        <li>
+          <h4>Grant eligibility the department can't access alone</h4>
+          <p>Great Outdoors Colorado (GOCO), Colorado Parks &amp; Wildlife trail grants, and county partnership funds are frequently written for — or scored higher for — projects with a community nonprofit partner. Medicine Wheel Trail Advocates was awarded a $45,000 GOCO grant to fund the planning process for a single one-mile connector near Monument. A contractor invoices the town; a nonprofit brings match dollars <em>to</em> the town.</p>
+        </li>
+        <li>
+          <h4>Volunteer labor at a scale no crew can match</h4>
+          <p>COMBA volunteers contribute more than 7,000 hours of trail work every year. Boulder Mountainbike Alliance has logged over 24,000 volunteer hours across 150+ project days. For grant-match purposes that labor is valued at roughly $33 per hour — real, bankable capacity that expands what the department can deliver without expanding its payroll.</p>
+        </li>
+        <li>
+          <h4>Specialized design expertise and sustainability</h4>
+          <p>Purpose-built, modern trail design sheds water, resists braiding, and survives heavy rain. On Green Mountain in Lakewood, riders report that the COMBA-designed reroutes hold up dramatically better after storms than the old fall-line trails they replaced — less erosion, less maintenance, longer trail life. That's cost avoidance the town banks for years.</p>
+        </li>
+        <li>
+          <h4>A built-in political constituency</h4>
+          <p>A nonprofit is an organized body of residents who show up to public meetings, write letters of support, and turn out for their trails. That converts trail-building from a line item a council can quietly cut into a visible community priority with a voting base behind it.</p>
+        </li>
+      </ul>
+
+      <p>None of this replaces the parks department. This is the crucial point, and the one that disarms the usual objection. The strongest trail towns keep their staff, keep hiring professional contractors for the heavy machine work, <em>and</em> add a nonprofit partner on top. The three are additive. The question isn't "staff versus nonprofit" — it's whether to leave the third leg of the stool on the ground.</p>
+
+      <div class="pullquote">"With today's limited budgets, land management agencies are finding it harder and harder to build new trails. The nonprofit steps in to help build trails that benefit all users." — the model Medicine Wheel has run in the Pikes Peak region since 1991.</div>
+
+      <h3>The national pattern</h3>
+      <p>This isn't a Colorado quirk. The same public-plus-nonprofit structure appears wherever trail networks have grown into national destinations — and the scale it unlocks is hard to argue with.</p>
+
+      <div class="cases">
+        <div class="case">
+          <div class="case-tag">Northern Wisconsin</div>
+          <h4>CAMBA</h4>
+          <div class="case-loc">Chequamegon Area MTB Association · Bayfield &amp; Sawyer Counties</div>
+          <div class="case-stat">135+ mi</div>
+          <div class="case-stat-lbl">singletrack (300+ mi total system)</div>
+          <p>A volunteer 501(c)(3) that develops and <strong>manages</strong> the entire regional network in partnership with the U.S. Forest Service, county forests, local governments, and private landowners. The towns of Cable, Hayward, Seeley, and Namekagon didn't each build their own trails — a single nonprofit stitched a million acres of public and private land into one destination that anchors the local tourism economy.</p>
+        </div>
+        <div class="case">
+          <div class="case-tag">Northwest Arkansas</div>
+          <h4>NWA Trailblazers</h4>
+          <div class="case-loc">Bentonville, Fayetteville, Rogers, Springdale</div>
+          <div class="case-stat">$159M</div>
+          <div class="case-stat-lbl">annual economic impact from cycling</div>
+          <p>Municipalities partnered with a regional nonprofit and the Walton Family Foundation to build 300+ miles of trail. Bentonville — a town of ~66,000, comparable to Castle Rock — now holds ~134 miles of singletrack inside city limits and bills itself the "Mountain Biking Capital of the World." Trails there are treated as <strong>economic infrastructure</strong>, not a recreation expense.</p>
+        </div>
+        <div class="case">
+          <div class="case-tag">Front Range · Colorado</div>
+          <h4>COMBA &amp; Jeffco</h4>
+          <div class="case-loc">Jefferson County Open Space</div>
+          <div class="case-stat">36</div>
+          <div class="case-stat-lbl">agencies + nonprofits in the Jeffco Trails Plan</div>
+          <p>Jefferson County's countywide trails plan was built collaboratively with COMBA at the table, and the county runs a Trails Partnership Program that funds up to 25% of local and 50% of regional projects. Deer Creek Canyon Park, Green Mountain, Lair o' the Bear, and Floyd Hill are all COMBA-partnered. In Jeffco, going it alone is the exception — partnership is the default.</p>
+        </div>
+      </div>
+
+      <h3>The coalition behind the partners</h3>
+      <p>One more structural point makes the Colorado case especially strong: the nonprofits aren't isolated local clubs. Almost all of them belong to the <em>Colorado Mountain Bike Coalition (COMTB)</em> — a statewide coalition of more than 20 nonprofit trail organizations, with COMBA, Medicine Wheel, and Boulder Mountainbike Alliance among its members and on its board. When a town partners with any one of these groups, it isn't just hiring a local volunteer crew; it's plugging into a statewide brain trust that shares grant-writing expertise, trail-design standards, land-manager relationships, and legislative advocacy for public trail funding. A parks department going it alone forfeits access to that entire network.</p>
+
+      <h3>What this means for Castle Rock</h3>
+      <p>Castle Rock has roughly 40 miles of singletrack and a genuine asset in its foothills-and-mesa terrain — the kind of ground that <em>rewards</em> good trail design. It hires professional contractors like Timberline Trail Craft for construction, so the objection was never about trusting outside builders. Yet it remains one of only two Douglas County foothills communities in this survey — alongside Highlands Ranch, whose trails are run by a homeowners association rather than a trail-advocacy nonprofit — sitting on bikeable terrain without a COMBA or COMTB-member partner.</p>
+
+      <p>The consequence is capacity. An in-house-only pipeline can maintain what exists, but it cannot easily scale to meet a population and trail-use curve that keeps climbing. The communities that reached for the full three-legged stool — staff, contractors, <em>and</em> a nonprofit plugged into the statewide coalition — did so precisely because the third leg is what lets the network grow. The reframe that matters for a skeptical council isn't "your team isn't good enough." It's simpler and harder to rebut: <strong>partnership is how you stop leaving grant dollars, volunteer hours, and design expertise on the table — and it's what nearly every comparable community already does.</strong></p>
+    </div>
+
+    <p class="disclaimer">
+      <strong>Sources &amp; confidence.</strong> Partnership status is drawn from the organizations' own project pages and public agency records (Colorado Mountain Bike Coalition, COMBA, Medicine Wheel Trail Advocates, Boulder Mountainbike Alliance, Jefferson County Open Space) and is high-confidence. Singletrack mileage figures are estimates compiled from Trailforks, agency trail pages, and COTREX, and vary by source depending on how paved and soft-surface segments are counted — verify against current data before formal use. Castle Rock's 40-mile figure is per the project author. National figures: CAMBA (cambatrails.org, U.S. Forest Service), NWA economic impact (University of Arkansas 2023 study; Walton Family Foundation). Compiled for Post Millennium Renaissance MTB as a brainstorming and advocacy resource — data may have changed since compilation.
+    </p>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer>
+    <div>
+      <div class="foot-brand">Post Millennium <span>Renaissance</span></div>
+      <div class="foot-meta">Trail advocacy · Castle Rock, Colorado</div>
+    </div>
+    <div class="foot-meta">
+      <a href="https://www.postmillenniumrenaissance.com">postmillenniumrenaissance.com</a><br>
+      No solutions, only tradeoffs.
+    </div>
+  </footer>
+
+</div>
+
+<script>
+/* ============================================================
+   DATA
+   status: 'yes' | 'no'  (partial folded into note where relevant)
+   conf: 3 = high, 2 = med, 1 = low  (for the partnership call)
+   ============================================================ */
+const DATA = [
+  { town:"Castle Rock", county:"Douglas", status:"no", org:"None — in-house + Timberline Trail Craft (for-profit)", miles:40, conf:3, note:"Only foothills municipality in this survey that declines nonprofit partnership." },
+  { town:"Parker", county:"Douglas", status:"no", org:"None", miles:2, conf:2, note:"27+ mi of trail, but almost entirely paved multi-use; ~1.8 mi natural-surface loop." },
+  { town:"Highlands Ranch", county:"Douglas", status:"no", org:"None — HRCA (a nonprofit HOA) manages trails in-house", miles:26, conf:3, note:"HRCA is a homeowners association structured as a nonprofit, not a mountain-bike trail advocacy organization. 8,200-acre Backcountry Wilderness Area." },
+  { town:"Littleton", county:"Jefferson", status:"yes", org:"COMBA", miles:14, conf:3, note:"Deer Creek Canyon Park is Jeffco Open Space (Littleton mailing address, outside city limits). Some trails hiker/equestrian-only." },
+  { town:"Golden", county:"Jefferson", status:"yes", org:"COMBA", miles:48, conf:2, note:"COMBA builds 'singletrack sidewalks' in town; Jeffco/COMBA build & maintain the ringing parks — Apex (~10), North Table (~17), South Table (~16), Mt. Galbraith (~5). Most acreage is Jeffco Open Space, not city-owned." },
+  { town:"Lakewood", county:"Jefferson", status:"yes", org:"COMBA", miles:15, conf:3, note:"Green Mountain / Wm. F. Hayden Park + Bear Creek Lake Park." },
+  { town:"Morrison", county:"Jefferson", status:"yes", org:"COMBA", miles:19, conf:2, note:"Mt. Falcon + Matthews/Winters — Jeffco Open Space parks near the town." },
+  { town:"Evergreen", county:"Jefferson", status:"yes", org:"COMBA", miles:28, conf:2, note:"Alderfer/Three Sisters, Elk Meadow, Flying J. Unincorporated." },
+  { town:"Arvada", county:"Jefferson", status:"no", org:"None within city limits", miles:3, conf:2, note:"White Ranch (20+ mi, Jeffco/COMBA-adjacent) is nearby but outside the boundary." },
+  { town:"Wheat Ridge", county:"Jefferson", status:"no", org:"None", miles:1, conf:2, note:"Crown Hill trails are paved." },
+  { town:"Colorado Springs", county:"El Paso", status:"yes", org:"Medicine Wheel Trail Advocates", miles:100, conf:3, note:"33 volunteer dig dates in 2024; 7 on city Parks property. Palmer, Ute Valley, Red Rock Canyon, Stratton." },
+  { town:"Monument", county:"El Paso", status:"yes", org:"Medicine Wheel Trail Advocates", miles:8, conf:3, note:"MedWheel leading the FL7-to-Monument Trail connector." },
+  { town:"Thornton", county:"Adams", status:"no", org:"None", miles:2, conf:2, note:"Extensive trail mileage city-wide but overwhelmingly paved greenway." },
+  { town:"Brighton", county:"Adams", status:"no", org:"None", miles:1, conf:1, note:"Plains terrain; paved-dominant. Not deeply verified." },
+  { town:"Commerce City", county:"Adams", status:"no", org:"None", miles:2, conf:2, note:"Short unpaved spurs off the Sand Creek Greenway." },
+  { town:"Westminster", county:"Adams", status:"no", org:"None", miles:2, conf:1, note:"Spans Adams/Jefferson. Paved-dominant." },
+  { town:"Aurora", county:"Arapahoe", status:"no", org:"None", miles:3, conf:2, note:"Spans Arapahoe/Adams. Short spurs like Creekside off Sand Creek Trail." },
+  { town:"Centennial", county:"Arapahoe", status:"no", org:"None", miles:1, conf:2, note:"Greenway-dominant suburban network." },
+  { town:"Englewood", county:"Arapahoe", status:"no", org:"None", miles:1, conf:2, note:"Big Dry Creek / Mary Carter Greenway — paved." },
+  { town:"Boulder", county:"Boulder", status:"yes", org:"Boulder Mountainbike Alliance", miles:25, conf:3, note:"BMA designs/builds/maintains with the city, county, and USFS; 20+ mi recently improved." },
+  { town:"Idaho Springs", county:"Clear Creek", status:"yes", org:"COMBA", miles:12, conf:3, note:"Virginia Canyon Mountain Park; COMBA served as city consultants." },
+  { town:"Black Hawk", county:"Gilpin", status:"yes", org:"COMBA", miles:10, conf:3, note:"Maryland Mountain — COMBA building bike-only directional trail." }
+];
+
+const CONF_LABEL = { 3:"High", 2:"Medium", 1:"Low" };
+const CONF_CLASS = { 3:"high", 2:"med", 1:"low" };
+const maxMiles = Math.max(...DATA.map(d => d.miles));
+
+/* ---------- Render ---------- */
+const tbody = document.getElementById('tbody');
+function statusBadge(s){
+  if(s==="yes") return '<span class="badge b-yes">Yes</span>';
+  return '<span class="badge b-no">No</span>';
+}
+function render(rows){
+  tbody.innerHTML = rows.map(d => `
+    <tr data-town="${d.town.toLowerCase()}" data-org="${d.org.toLowerCase()}" data-status="${d.status}" data-county="${d.county}">
+      <td>
+        <div class="town-name">${d.town}</div>
+        <div class="town-note">${d.note}</div>
+      </td>
+      <td data-label="County">${d.county}</td>
+      <td data-label="Partner?">${statusBadge(d.status)}</td>
+      <td class="col-org" data-label="Partner">${d.org}</td>
+      <td data-label="Singletrack">
+        <span class="miles-val">${d.miles} mi</span>
+        <div class="miles-bar" style="width:${Math.max(6,(d.miles/maxMiles)*100)}%"></div>
+      </td>
+      <td data-label="Confidence"><span class="conf ${CONF_CLASS[d.conf]}">${CONF_LABEL[d.conf]}</span></td>
+    </tr>`).join('');
+}
+
+/* ---------- Thesis counters ---------- */
+document.getElementById('t-total').textContent = DATA.length;
+document.getElementById('t-yes').textContent = DATA.filter(d=>d.status==="yes").length;
+
+/* ---------- Filter + search state ---------- */
+let fStatus = "all", fCounty = "all", fSearch = "";
+function apply(){
+  let rows = DATA.filter(d => {
+    if(fStatus!=="all" && d.status!==fStatus) return false;
+    if(fCounty!=="all" && d.county!==fCounty) return false;
+    if(fSearch){
+      const hay = (d.town+" "+d.org+" "+d.county).toLowerCase();
+      if(!hay.includes(fSearch)) return false;
+    }
+    return true;
+  });
+  rows = sortRows(rows);
+  render(rows);
+  document.getElementById('empty').classList.toggle('row-hidden', rows.length>0);
+  document.getElementById('grid').style.display = rows.length>0 ? '' : 'none';
+}
+
+/* ---------- Sorting ---------- */
+let sortKey = null, sortDir = 1;
+const statusRank = { yes:1, no:0 };
+function sortRows(rows){
+  if(!sortKey) return rows;
+  const type = document.querySelector(`th[data-sort="${sortKey}"]`).dataset.type;
+  return rows.slice().sort((a,b)=>{
+    let av, bv;
+    if(sortKey==="miles"){ av=a.miles; bv=b.miles; }
+    else if(sortKey==="conf"){ av=a.conf; bv=b.conf; }
+    else if(sortKey==="status"){ av=statusRank[a.status]; bv=statusRank[b.status]; }
+    else { av=(a[sortKey==="town"?"town":sortKey==="org"?"org":"county"]).toLowerCase(); bv=(b[sortKey==="town"?"town":sortKey==="org"?"org":"county"]).toLowerCase(); }
+    if(av<bv) return -1*sortDir;
+    if(av>bv) return 1*sortDir;
+    return 0;
+  });
+}
+document.querySelectorAll('th[data-sort]').forEach(th=>{
+  th.addEventListener('click', ()=>{
+    const key = th.dataset.sort;
+    if(sortKey===key){ sortDir*=-1; } else { sortKey=key; sortDir = (th.dataset.type==="str")?1:-1; }
+    document.querySelectorAll('th[data-sort]').forEach(o=>o.removeAttribute('aria-sort'));
+    th.setAttribute('aria-sort', sortDir===1?"ascending":"descending");
+    apply();
+  });
+});
+
+/* ---------- Chip filters (only chips that declare a data-filter group) ---------- */
+document.querySelectorAll('.chip[data-filter]').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    const grp = chip.dataset.filter, val = chip.dataset.val;
+    document.querySelectorAll(`.chip[data-filter="${grp}"]`).forEach(c=>c.setAttribute('aria-pressed','false'));
+    chip.setAttribute('aria-pressed','true');
+    if(grp==="status") fStatus=val; else fCounty=val;
+    apply();
+  });
+});
+
+/* ---------- Search ---------- */
+document.getElementById('search').addEventListener('input', e=>{
+  fSearch = e.target.value.trim().toLowerCase();
+  apply();
+});
+
+/* ---------- Compact / full view toggle ---------- */
+const viewToggle = document.getElementById('viewToggle');
+viewToggle.addEventListener('click', ()=>{
+  const nowCompact = !document.body.classList.contains('compact');
+  document.body.classList.toggle('compact', nowCompact);
+  viewToggle.textContent = nowCompact ? 'Full detail' : 'Compact';
+  viewToggle.setAttribute('aria-pressed', nowCompact ? 'true' : 'false');
+  viewToggle.dataset.mode = nowCompact ? 'compact' : 'full';
+});
+
+/* ---------- Theme switcher ---------- */
+document.querySelectorAll('[data-set-theme]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const theme = btn.dataset.setTheme;
+    document.documentElement.setAttribute('data-theme', theme);
+    document.querySelectorAll('[data-set-theme]').forEach(b=>b.setAttribute('aria-pressed','false'));
+    btn.setAttribute('aria-pressed','true');
+  });
+});
+
+/* ---------- Init ---------- */
+document.documentElement.setAttribute('data-theme','sandstone');
+apply();
+</script>
+</body>
+</html>
