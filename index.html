@@ -578,24 +578,24 @@
     <div class="thesis">
       <div class="thesis-cell">
         <div class="thesis-num" id="t-total">—</div>
-        <div class="thesis-lbl">towns surveyed across 7 counties</div>
+        <div class="thesis-lbl">towns surveyed across <span id="t-counties">—</span> counties</div>
       </div>
       <div class="thesis-cell">
         <div class="thesis-num" id="t-yes">—</div>
         <div class="thesis-lbl">partner with a trail-advocacy nonprofit</div>
       </div>
       <div class="thesis-cell">
-        <div class="thesis-num">20+</div>
+        <div class="thesis-num" id="t-comtb">—</div>
         <div class="thesis-lbl">Colorado nonprofits under the COMTB coalition — including COMBA, Medicine Wheel Trail Advocates &amp; BMA</div>
       </div>
       <div class="thesis-cell">
-        <div class="thesis-num">2</div>
-        <div class="thesis-lbl">Douglas County foothills communities that still go it alone — Castle Rock &amp; Highlands Ranch</div>
+        <div class="thesis-num" id="t-alone">—</div>
+        <div class="thesis-lbl" id="t-alone-lbl">—</div>
       </div>
     </div>
 
     <p class="coalition-note">
-      Nearly every mountain-bike trail nonprofit in this survey belongs to one umbrella group: the <a href="https://comtb.org" target="_blank" rel="noopener"><strong>Colorado Mountain Bike Coalition (COMTB)</strong></a> — a statewide coalition of 20+ nonprofit trail organizations whose members include COMBA, Medicine Wheel Trail Advocates, and Boulder Mountainbike Alliance. When a town partners with one of these groups, it plugs into a statewide network of shared expertise, grant know-how, and political weight. See the <a href="https://comtb.org/colorado-trail-organizations/" target="_blank" rel="noopener">full member directory</a>.
+      Nearly every mountain-bike trail nonprofit in this survey belongs to one umbrella group: the <a href="https://comtb.org" target="_blank" rel="noopener"><strong>Colorado Mountain Bike Coalition (COMTB)</strong></a> — a statewide coalition of <span id="t-comtb-inline">20+</span> nonprofit trail organizations whose members include COMBA, Medicine Wheel Trail Advocates, and Boulder Mountainbike Alliance. When a town partners with one of these groups, it plugs into a statewide network of shared expertise, grant know-how, and political weight. See the <a href="https://comtb.org/colorado-trail-organizations/" target="_blank" rel="noopener">full member directory</a>.
     </p>
   </header>
 
@@ -614,14 +614,10 @@
         <button class="chip" data-filter="status" data-val="yes" aria-pressed="false">Partners</button>
         <button class="chip" data-filter="status" data-val="no" aria-pressed="false">No partner</button>
       </div>
-      <div class="ctrl-grp">
+      <div class="ctrl-grp" id="countyChips">
         <span class="ctrl-lbl">County</span>
-        <button class="chip" data-filter="county" data-val="all" aria-pressed="true">All</button>
-        <button class="chip" data-filter="county" data-val="Douglas" aria-pressed="false">Douglas</button>
-        <button class="chip" data-filter="county" data-val="Jefferson" aria-pressed="false">Jefferson</button>
-        <button class="chip" data-filter="county" data-val="Adams" aria-pressed="false">Adams</button>
-        <button class="chip" data-filter="county" data-val="Arapahoe" aria-pressed="false">Arapahoe</button>
-        <button class="chip" data-filter="county" data-val="El Paso" aria-pressed="false">El Paso</button>
+        <!-- county chip buttons are generated from DATA by renderCountyChips() below,
+             so a new county in DATA automatically gets a filter chip -->
       </div>
       <input class="search" id="search" type="search" placeholder="Search town or nonprofit…" aria-label="Search">
       <div class="ctrl-grp view-grp">
@@ -691,38 +687,13 @@
       <h3>The national pattern</h3>
       <p>This isn't a Colorado quirk. The same public-plus-nonprofit structure appears wherever trail networks have grown into national destinations — and the scale it unlocks is hard to argue with.</p>
 
-      <div class="cases">
-        <div class="case">
-          <div class="case-tag">Northern Wisconsin</div>
-          <h4>CAMBA</h4>
-          <div class="case-loc">Chequamegon Area MTB Association · Bayfield &amp; Sawyer Counties</div>
-          <div class="case-stat">135+ mi</div>
-          <div class="case-stat-lbl">singletrack (300+ mi total system)</div>
-          <p>A volunteer 501(c)(3) that develops and <strong>manages</strong> the entire regional network in partnership with the U.S. Forest Service, county forests, local governments, and private landowners. The towns of Cable, Hayward, Seeley, and Namekagon didn't each build their own trails — a single nonprofit stitched a million acres of public and private land into one destination that anchors the local tourism economy.</p>
-        </div>
-        <div class="case">
-          <div class="case-tag">Northwest Arkansas</div>
-          <h4>NWA Trailblazers</h4>
-          <div class="case-loc">Bentonville, Fayetteville, Rogers, Springdale</div>
-          <div class="case-stat">$159M</div>
-          <div class="case-stat-lbl">annual economic impact from cycling</div>
-          <p>Municipalities partnered with a regional nonprofit and the Walton Family Foundation to build 300+ miles of trail. Bentonville — a town of ~66,000, comparable to Castle Rock — now holds ~134 miles of singletrack inside city limits and bills itself the "Mountain Biking Capital of the World." Trails there are treated as <strong>economic infrastructure</strong>, not a recreation expense.</p>
-        </div>
-        <div class="case">
-          <div class="case-tag">Front Range · Colorado</div>
-          <h4>COMBA &amp; Jeffco</h4>
-          <div class="case-loc">Jefferson County Open Space</div>
-          <div class="case-stat">36</div>
-          <div class="case-stat-lbl">agencies + nonprofits in the Jeffco Trails Plan</div>
-          <p>Jefferson County's countywide trails plan was built collaboratively with COMBA at the table, and the county runs a Trails Partnership Program that funds up to 25% of local and 50% of regional projects. Deer Creek Canyon Park, Green Mountain, Lair o' the Bear, and Floyd Hill are all COMBA-partnered. In Jeffco, going it alone is the exception — partnership is the default.</p>
-        </div>
-      </div>
+      <div class="cases" id="cases"><!-- injected from CASE_STUDIES by renderCases() --></div>
 
       <h3>The coalition behind the partners</h3>
       <p>One more structural point makes the Colorado case especially strong: the nonprofits aren't isolated local clubs. Almost all of them belong to the <em>Colorado Mountain Bike Coalition (COMTB)</em> — a statewide coalition of more than 20 nonprofit trail organizations, with COMBA, Medicine Wheel Trail Advocates, and Boulder Mountainbike Alliance among its members and on its board. When a town partners with any one of these groups, it isn't just hiring a local volunteer crew; it's plugging into a statewide brain trust that shares grant-writing expertise, trail-design standards, land-manager relationships, and legislative advocacy for public trail funding. A parks department going it alone forfeits access to that entire network.</p>
 
       <h3>What this means for Castle Rock</h3>
-      <p>Castle Rock has roughly 40 miles of singletrack and a genuine asset in its foothills-and-mesa terrain — the kind of ground that <em>rewards</em> good trail design. It hires professional contractors like Timberline Trail Craft for construction, so the objection was never about trusting outside builders. Yet it remains one of only two Douglas County foothills communities in this survey — alongside Highlands Ranch, whose trails are run by a homeowners association rather than a trail-advocacy nonprofit — sitting on bikeable terrain without a COMBA or COMTB-member partner.</p>
+      <p>Castle Rock has roughly <span id="cr-miles">—</span> miles of singletrack and a genuine asset in its foothills-and-mesa terrain — the kind of ground that <em>rewards</em> good trail design. It hires professional contractors like Timberline Trail Craft for construction, so the objection was never about trusting outside builders. Yet it remains one of only two Douglas County foothills communities in this survey — alongside Highlands Ranch, whose trails are run by a homeowners association rather than a trail-advocacy nonprofit — sitting on bikeable terrain without a COMBA or COMTB-member partner.</p>
 
       <p>The consequence is capacity. An in-house-only pipeline can maintain what exists, but it cannot easily scale to meet a population and trail-use curve that keeps climbing. The communities that reached for the full three-legged stool — staff, contractors, <em>and</em> a nonprofit plugged into the statewide coalition — did so precisely because the third leg is what lets the network grow. The reframe that matters for a skeptical council isn't "your team isn't good enough." It's simpler and harder to rebut: <strong>partnership is how you stop leaving grant dollars, volunteer hours, and design expertise on the table — and it's what nearly every comparable community already does.</strong></p>
     </div>
@@ -753,9 +724,9 @@
    conf: 3 = high, 2 = med, 1 = low  (for the partnership call)
    ============================================================ */
 const DATA = [
-  { town:"Castle Rock", county:"Douglas", status:"no", org:"None — in-house + Timberline Trail Craft (for-profit)", miles:40, conf:3, note:"Only foothills municipality in this survey that declines nonprofit partnership." },
-  { town:"Parker", county:"Douglas", status:"no", org:"None", miles:2, conf:2, note:"27+ mi of trail, but almost entirely paved multi-use; ~1.8 mi natural-surface loop." },
-  { town:"Highlands Ranch", county:"Douglas", status:"no", org:"None — HRCA (a nonprofit HOA) manages trails in-house", miles:26, conf:3, note:"HRCA is a homeowners association structured as a nonprofit, not a mountain-bike trail advocacy organization. 8,200-acre Backcountry Wilderness Area." },
+  { town:"Castle Rock", county:"Douglas", status:"no", org:"None — in-house + Timberline Trail Craft (for-profit)", miles:40, conf:3, foothills:true, note:"Only foothills municipality in this survey that declines nonprofit partnership." },
+  { town:"Parker", county:"Douglas", status:"no", org:"None", miles:2, conf:2, foothills:false, note:"27+ mi of trail, but almost entirely paved multi-use; ~1.8 mi natural-surface loop." },
+  { town:"Highlands Ranch", county:"Douglas", status:"no", org:"None — HRCA (a nonprofit HOA) manages trails in-house", miles:26, conf:3, foothills:true, note:"HRCA is a homeowners association structured as a nonprofit, not a mountain-bike trail advocacy organization. 8,200-acre Backcountry Wilderness Area." },
   { town:"Littleton", county:"Jefferson", status:"yes", org:"COMBA", miles:14, conf:3, note:"Deer Creek Canyon Park is Jeffco Open Space (Littleton mailing address, outside city limits). Some trails hiker/equestrian-only." },
   { town:"Golden", county:"Jefferson", status:"yes", org:"COMBA", miles:48, conf:2, note:"COMBA builds 'singletrack sidewalks' in town; Jeffco/COMBA build & maintain the ringing parks — Apex (~10), North Table (~17), South Table (~16), Mt. Galbraith (~5). Most acreage is Jeffco Open Space, not city-owned." },
   { town:"Lakewood", county:"Jefferson", status:"yes", org:"COMBA", miles:15, conf:3, note:"Green Mountain / Wm. F. Hayden Park + Bear Creek Lake Park." },
@@ -776,6 +747,42 @@ const DATA = [
   { town:"Idaho Springs", county:"Clear Creek", status:"yes", org:"COMBA", miles:12, conf:3, note:"Virginia Canyon Mountain Park; COMBA served as city consultants." },
   { town:"Black Hawk", county:"Gilpin", status:"yes", org:"COMBA", miles:10, conf:3, note:"Maryland Mountain — COMBA building bike-only directional trail." }
 ];
+
+/* ============================================================
+   CASE STUDIES — national examples in the "why partner" section.
+   Add a new one here and it renders automatically; no HTML editing needed.
+   ============================================================ */
+const CASE_STUDIES = [
+  {
+    tag: "Northern Wisconsin",
+    name: "CAMBA",
+    loc: "Chequamegon Area MTB Association · Bayfield &amp; Sawyer Counties",
+    stat: "135+ mi",
+    statLbl: "singletrack (300+ mi total system)",
+    body: "A volunteer 501(c)(3) that develops and <strong>manages</strong> the entire regional network in partnership with the U.S. Forest Service, county forests, local governments, and private landowners. The towns of Cable, Hayward, Seeley, and Namekagon didn't each build their own trails — a single nonprofit stitched a million acres of public and private land into one destination that anchors the local tourism economy."
+  },
+  {
+    tag: "Northwest Arkansas",
+    name: "NWA Trailblazers",
+    loc: "Bentonville, Fayetteville, Rogers, Springdale",
+    stat: "$159M",
+    statLbl: "annual economic impact from cycling",
+    body: "Municipalities partnered with a regional nonprofit and the Walton Family Foundation to build 300+ miles of trail. Bentonville — a town of ~66,000, comparable to Castle Rock — now holds ~134 miles of singletrack inside city limits and bills itself the \"Mountain Biking Capital of the World.\" Trails there are treated as <strong>economic infrastructure</strong>, not a recreation expense."
+  },
+  {
+    tag: "Front Range · Colorado",
+    name: "COMBA &amp; Jeffco",
+    loc: "Jefferson County Open Space",
+    stat: "36",
+    statLbl: "agencies + nonprofits in the Jeffco Trails Plan",
+    body: "Jefferson County's countywide trails plan was built collaboratively with COMBA at the table, and the county runs a Trails Partnership Program that funds up to 25% of local and 50% of regional projects. Deer Creek Canyon Park, Green Mountain, Lair o' the Bear, and Floyd Hill are all COMBA-partnered. In Jeffco, going it alone is the exception — partnership is the default."
+  }
+];
+
+/* Single source of truth for the COMTB coalition size — this fact isn't
+   derivable from DATA (it's about the coalition, not this survey's towns),
+   so it lives here once and gets injected everywhere it's mentioned. */
+const COMTB_MEMBER_COUNT = "20+";
 
 const CONF_LABEL = { 3:"High", 2:"Medium", 1:"Low" };
 const CONF_CLASS = { 3:"high", 2:"med", 1:"low" };
@@ -805,9 +812,55 @@ function render(rows){
     </tr>`).join('');
 }
 
-/* ---------- Thesis counters ---------- */
-document.getElementById('t-total').textContent = DATA.length;
-document.getElementById('t-yes').textContent = DATA.filter(d=>d.status==="yes").length;
+/* ---------- County filter chips (generated from DATA) ---------- */
+function renderCountyChips(){
+  const counties = [...new Set(DATA.map(d => d.county))].sort();
+  const wrap = document.getElementById('countyChips');
+  const allBtn = `<button class="chip" data-filter="county" data-val="all" aria-pressed="true">All</button>`;
+  const countyBtns = counties.map(c =>
+    `<button class="chip" data-filter="county" data-val="${c}" aria-pressed="false">${c}</button>`
+  ).join('');
+  wrap.insertAdjacentHTML('beforeend', allBtn + countyBtns);
+}
+
+/* ---------- Case study cards (from CASE_STUDIES) ---------- */
+function renderCases(){
+  document.getElementById('cases').innerHTML = CASE_STUDIES.map(c => `
+    <div class="case">
+      <div class="case-tag">${c.tag}</div>
+      <h4>${c.name}</h4>
+      <div class="case-loc">${c.loc}</div>
+      <div class="case-stat">${c.stat}</div>
+      <div class="case-stat-lbl">${c.statLbl}</div>
+      <p>${c.body}</p>
+    </div>`).join('');
+}
+
+/* ---------- Thesis strip stats (all computed from DATA, nothing hand-typed) ---------- */
+function renderThesisStats(){
+  document.getElementById('t-total').textContent = DATA.length;
+  document.getElementById('t-yes').textContent = DATA.filter(d => d.status==="yes").length;
+  document.getElementById('t-counties').textContent = new Set(DATA.map(d => d.county)).size;
+  document.getElementById('t-comtb').textContent = COMTB_MEMBER_COUNT;
+  document.getElementById('t-comtb-inline').textContent = COMTB_MEMBER_COUNT;
+
+  // "Go it alone" foothills stat: Douglas County, no nonprofit partner, and
+  // flagged foothills (excludes plains/paved towns like Parker). Recalculates
+  // automatically if a Douglas County row is added, changed, or removed.
+  const alone = DATA.filter(d => d.county==="Douglas" && d.status==="no" && d.foothills);
+  document.getElementById('t-alone').textContent = alone.length;
+  document.getElementById('t-alone-lbl').textContent =
+    `Douglas County foothills communities that still go it alone — ${alone.map(d => d.town).join(' & ')}`;
+
+  // Castle Rock's mileage in the closing prose, read from DATA instead of typed separately
+  const castleRock = DATA.find(d => d.town==="Castle Rock");
+  if(castleRock) document.getElementById('cr-miles').textContent = castleRock.miles;
+}
+
+/* ---------- Build DATA-driven content before wiring up interactivity ---------- */
+renderCountyChips();
+renderCases();
+renderThesisStats();
 
 /* ---------- Filter + search state ---------- */
 let fStatus = "all", fCounty = "all", fSearch = "";
@@ -838,7 +891,8 @@ function sortRows(rows){
     if(sortKey==="miles"){ av=a.miles; bv=b.miles; }
     else if(sortKey==="conf"){ av=a.conf; bv=b.conf; }
     else if(sortKey==="status"){ av=statusRank[a.status]; bv=statusRank[b.status]; }
-    else { av=(a[sortKey==="town"?"town":sortKey==="org"?"org":"county"]).toLowerCase(); bv=(b[sortKey==="town"?"town":sortKey==="org"?"org":"county"]).toLowerCase(); }
+    // text columns (town / org / county): sortKey already matches the DATA field name directly
+    else { av=a[sortKey].toLowerCase(); bv=b[sortKey].toLowerCase(); }
     if(av<bv) return -1*sortDir;
     if(av>bv) return 1*sortDir;
     return 0;
