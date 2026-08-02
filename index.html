@@ -131,6 +131,7 @@
   .backlink:hover .arw { transform: translateX(-3px); }
 
   .theme-toggle { display: flex; gap: 6px; align-items: center; }
+  #themeSwatches { display: flex; gap: 6px; align-items: center; }
   .theme-toggle .lbl {
     font-family: var(--font-mono);
     font-size: 0.66rem;
@@ -151,9 +152,6 @@
   .swatch:hover { transform: scale(1.12); }
   .swatch[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 3px var(--shadow); }
   .swatch:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-  .sw-sandstone { background: linear-gradient(135deg, #efe7d8 50%, #a8501f 50%); }
-  .sw-alpenglow { background: linear-gradient(135deg, #1e212b 50%, #e8834a 50%); }
-  .sw-meridian  { background: linear-gradient(135deg, #ffffff 50%, #1f6f8b 50%); }
 
   /* ---------- Hero ---------- */
   .hero { padding: 52px 0 30px; position: relative; }
@@ -317,6 +315,18 @@
   tbody tr:hover { background: var(--bg-panel-alt); }
   .town-name { font-weight: 600; font-size: 0.96rem; }
   .town-note { font-size: 0.76rem; color: var(--ink-soft); margin-top: 3px; line-height: 1.4; }
+  .town-source {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.03em;
+    color: var(--accent);
+    text-decoration: none;
+    margin-top: 5px;
+    border-bottom: 1px solid transparent;
+    transition: var(--transition);
+  }
+  .town-source:hover { border-bottom-color: var(--accent); }
 
   .badge {
     display: inline-block;
@@ -563,9 +573,7 @@
     </a>
     <div class="theme-toggle" role="group" aria-label="Color scheme">
       <span class="lbl">Theme</span>
-      <button class="swatch sw-sandstone" data-set-theme="sandstone" aria-pressed="true" aria-label="Sandstone theme" title="Sandstone"></button>
-      <button class="swatch sw-alpenglow" data-set-theme="alpenglow" aria-pressed="false" aria-label="Alpenglow theme" title="Alpenglow"></button>
-      <button class="swatch sw-meridian" data-set-theme="meridian" aria-pressed="false" aria-label="Meridian theme" title="Meridian"></button>
+      <span id="themeSwatches"><!-- generated from THEMES array by renderThemeSwatches() --></span>
     </div>
   </div>
 
@@ -685,7 +693,7 @@
       <div class="pullquote">"With today's limited budgets, land management agencies are finding it harder and harder to build new trails. The nonprofit steps in to help build trails that benefit all users." — the model Medicine Wheel Trail Advocates has run in the Pikes Peak region since 1991.</div>
 
       <h3>The national pattern</h3>
-      <p>This isn't a Colorado quirk. The same public-plus-nonprofit structure appears wherever trail networks have grown into national destinations — and the scale it unlocks is hard to argue with.</p>
+      <p>This isn't a Colorado quirk. The same public-plus-nonprofit structure appears wherever trail networks have grown into national destinations — and it isn't a handful of outliers making it work. Over 370 nonprofit trail organizations operate across the U.S. (see the <a href="https://www.postmillenniumrenaissance.com/trail-advocacy-atlas/" target="_blank" rel="noopener">Trail Advocacy Atlas</a>), and the scale that unlocks is hard to argue with.</p>
 
       <div class="cases" id="cases"><!-- injected from CASE_STUDIES by renderCases() --></div>
 
@@ -725,13 +733,13 @@
    ============================================================ */
 const DATA = [
   { town:"Castle Rock", county:"Douglas", status:"no", org:"None — in-house + Timberline Trail Craft (for-profit)", miles:40, conf:3, foothills:true, note:"Only foothills municipality in this survey that declines nonprofit partnership." },
-  { town:"Parker", county:"Douglas", status:"no", org:"None", miles:2, conf:2, foothills:false, note:"27+ mi of trail, but almost entirely paved multi-use; ~1.8 mi natural-surface loop." },
+  { town:"Parker", county:"Douglas", status:"no", org:"None", miles:2, conf:3, foothills:false, source:"https://www.parkerrec.com/301/PARKS-TRAILS", note:"Parker's own Parks &amp; Trails map (41 total mi, mostly paved) shows very little soft surface — supports the ~2 mi natural-surface estimate." },
   { town:"Highlands Ranch", county:"Douglas", status:"no", org:"None — HRCA (a nonprofit HOA) manages trails in-house", miles:26, conf:3, foothills:true, note:"HRCA is a homeowners association structured as a nonprofit, not a mountain-bike trail advocacy organization. 8,200-acre Backcountry Wilderness Area." },
   { town:"Littleton", county:"Jefferson", status:"yes", org:"COMBA", miles:14, conf:3, note:"Deer Creek Canyon Park is Jeffco Open Space (Littleton mailing address, outside city limits). Some trails hiker/equestrian-only." },
-  { town:"Golden", county:"Jefferson", status:"yes", org:"COMBA", miles:48, conf:2, note:"COMBA builds 'singletrack sidewalks' in town; Jeffco/COMBA build & maintain the ringing parks — Apex (~10), North Table (~17), South Table (~16), Mt. Galbraith (~5). Most acreage is Jeffco Open Space, not city-owned." },
+  { town:"Golden", county:"Jefferson", status:"yes", org:"COMBA", miles:48, conf:2, source:"https://www.cityofgolden.gov/community/parks_trails/index.php", note:"COMBA builds 'singletrack sidewalks' in town; Jeffco/COMBA build & maintain the ringing parks — Apex (~10), North Table (~17), South Table (~16), Mt. Galbraith (~5). Most acreage is Jeffco Open Space, not city-owned." },
   { town:"Lakewood", county:"Jefferson", status:"yes", org:"COMBA", miles:15, conf:3, note:"Green Mountain / Wm. F. Hayden Park + Bear Creek Lake Park." },
-  { town:"Morrison", county:"Jefferson", status:"yes", org:"COMBA", miles:19, conf:2, note:"Mt. Falcon + Matthews/Winters — Jeffco Open Space parks near the town." },
-  { town:"Evergreen", county:"Jefferson", status:"yes", org:"COMBA", miles:28, conf:2, note:"Alderfer/Three Sisters, Elk Meadow, Flying J. Unincorporated." },
+  { town:"Morrison", county:"Jefferson", status:"yes", org:"COMBA", miles:19, conf:2, source:"https://www.morrisonco.us/130/Parks-Trails", note:"Mt. Falcon + Matthews/Winters — Jeffco Open Space parks near the town." },
+  { town:"Evergreen", county:"Jefferson", status:"yes", org:"COMBA", miles:28, conf:2, source:"https://www.evergreenrecreation.com/trails", note:"Alderfer/Three Sisters, Elk Meadow, Flying J. Unincorporated." },
   { town:"Arvada", county:"Jefferson", status:"no", org:"None within city limits", miles:3, conf:2, note:"White Ranch (20+ mi, Jeffco/COMBA-adjacent) is nearby but outside the boundary." },
   { town:"Wheat Ridge", county:"Jefferson", status:"no", org:"None", miles:1, conf:2, note:"Crown Hill trails are paved." },
   { town:"Colorado Springs", county:"El Paso", status:"yes", org:"Medicine Wheel Trail Advocates", miles:100, conf:3, note:"33 volunteer dig dates in 2024; 7 on city Parks property. Palmer, Ute Valley, Red Rock Canyon, Stratton." },
@@ -784,6 +792,22 @@ const CASE_STUDIES = [
    so it lives here once and gets injected everywhere it's mentioned. */
 const COMTB_MEMBER_COUNT = "20+";
 
+/* ============================================================
+   THEMES — mirrors the palettes defined under html[data-theme="..."]
+   in the CSS above. To add a new color scheme:
+     1) add a new html[data-theme="yourkey"] { --bg: ...; --accent: ...; etc }
+        block in the <style>, copying the variable list from an existing one
+     2) add one entry below with the same key and its --bg/--accent hex
+        values (used to draw the little two-color swatch preview button)
+   Nothing else needs to change — the button, its click handler, and the
+   pressed/active state all render themselves from this list.
+   ============================================================ */
+const THEMES = [
+  { key:"sandstone", label:"Sandstone", bg:"#efe7d8", accent:"#a8501f" },
+  { key:"alpenglow", label:"Alpenglow", bg:"#1e212b", accent:"#e8834a" },
+  { key:"meridian",  label:"Meridian",  bg:"#ffffff", accent:"#1f6f8b" }
+];
+
 const CONF_LABEL = { 3:"High", 2:"Medium", 1:"Low" };
 const CONF_CLASS = { 3:"high", 2:"med", 1:"low" };
 const maxMiles = Math.max(...DATA.map(d => d.miles));
@@ -800,16 +824,27 @@ function render(rows){
       <td>
         <div class="town-name">${d.town}</div>
         <div class="town-note">${d.note}</div>
+        ${d.source ? `<a class="town-source" href="${d.source}" target="_blank" rel="noopener">Source ↗</a>` : ''}
       </td>
       <td data-label="County">${d.county}</td>
       <td data-label="Partner?">${statusBadge(d.status)}</td>
       <td class="col-org" data-label="Partner">${d.org}</td>
       <td data-label="Singletrack">
         <span class="miles-val">${d.miles} mi</span>
+        <!-- minimum 6% width so low-mileage towns still show a visible/tappable bar -->
         <div class="miles-bar" style="width:${Math.max(6,(d.miles/maxMiles)*100)}%"></div>
       </td>
       <td data-label="Confidence"><span class="conf ${CONF_CLASS[d.conf]}">${CONF_LABEL[d.conf]}</span></td>
     </tr>`).join('');
+}
+
+/* ---------- Theme swatch buttons (generated from THEMES) ---------- */
+function renderThemeSwatches(){
+  document.getElementById('themeSwatches').innerHTML = THEMES.map((t,i) => `
+    <button class="swatch" data-set-theme="${t.key}" aria-pressed="${i===0}"
+      aria-label="${t.label} theme" title="${t.label}"
+      style="background: linear-gradient(135deg, ${t.bg} 50%, ${t.accent} 50%);"></button>
+  `).join('');
 }
 
 /* ---------- County filter chips (generated from DATA) ---------- */
@@ -858,19 +893,20 @@ function renderThesisStats(){
 }
 
 /* ---------- Build DATA-driven content before wiring up interactivity ---------- */
+renderThemeSwatches();
 renderCountyChips();
 renderCases();
 renderThesisStats();
 
 /* ---------- Filter + search state ---------- */
-let fStatus = "all", fCounty = "all", fSearch = "";
-function apply(){
+let filterStatus = "all", filterCounty = "all", searchQuery = "";
+function applyFiltersAndRender(){
   let rows = DATA.filter(d => {
-    if(fStatus!=="all" && d.status!==fStatus) return false;
-    if(fCounty!=="all" && d.county!==fCounty) return false;
-    if(fSearch){
+    if(filterStatus!=="all" && d.status!==filterStatus) return false;
+    if(filterCounty!=="all" && d.county!==filterCounty) return false;
+    if(searchQuery){
       const hay = (d.town+" "+d.org+" "+d.county).toLowerCase();
-      if(!hay.includes(fSearch)) return false;
+      if(!hay.includes(searchQuery)) return false;
     }
     return true;
   });
@@ -901,28 +937,30 @@ function sortRows(rows){
 document.querySelectorAll('th[data-sort]').forEach(th=>{
   th.addEventListener('click', ()=>{
     const key = th.dataset.sort;
+    // text columns default to A→Z on first click; numeric/status columns default
+    // to high→low, since "most miles" / "highest confidence" is usually what you want first
     if(sortKey===key){ sortDir*=-1; } else { sortKey=key; sortDir = (th.dataset.type==="str")?1:-1; }
     document.querySelectorAll('th[data-sort]').forEach(o=>o.removeAttribute('aria-sort'));
     th.setAttribute('aria-sort', sortDir===1?"ascending":"descending");
-    apply();
+    applyFiltersAndRender();
   });
 });
 
 /* ---------- Chip filters (only chips that declare a data-filter group) ---------- */
 document.querySelectorAll('.chip[data-filter]').forEach(chip=>{
   chip.addEventListener('click', ()=>{
-    const grp = chip.dataset.filter, val = chip.dataset.val;
-    document.querySelectorAll(`.chip[data-filter="${grp}"]`).forEach(c=>c.setAttribute('aria-pressed','false'));
+    const group = chip.dataset.filter, value = chip.dataset.val;
+    document.querySelectorAll(`.chip[data-filter="${group}"]`).forEach(c=>c.setAttribute('aria-pressed','false'));
     chip.setAttribute('aria-pressed','true');
-    if(grp==="status") fStatus=val; else fCounty=val;
-    apply();
+    if(group==="status") filterStatus=value; else filterCounty=value;
+    applyFiltersAndRender();
   });
 });
 
 /* ---------- Search ---------- */
 document.getElementById('search').addEventListener('input', e=>{
-  fSearch = e.target.value.trim().toLowerCase();
-  apply();
+  searchQuery = e.target.value.trim().toLowerCase();
+  applyFiltersAndRender();
 });
 
 /* ---------- Compact / full view toggle ---------- */
@@ -947,7 +985,7 @@ document.querySelectorAll('[data-set-theme]').forEach(btn=>{
 
 /* ---------- Init ---------- */
 document.documentElement.setAttribute('data-theme','sandstone');
-apply();
+applyFiltersAndRender();
 </script>
 </body>
 </html>
