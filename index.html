@@ -130,6 +130,40 @@
   .backlink .arw { transition: transform var(--transition); }
   .backlink:hover .arw { transform: translateX(-3px); }
 
+  .topbar-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+
+  /* Print + Share: one oval, two buttons split by a hairline. Text and icons use
+     --ink (10:1+ in every theme); the border is decorative, the icons carry the meaning. */
+  .action-pill {
+    display: inline-flex;
+    border: 1px solid var(--line-strong);
+    border-radius: 100px;
+    overflow: hidden;
+    background: var(--bg-panel);
+  }
+  .pill-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 40px;
+    min-width: 44px;
+    justify-content: center;
+    padding: 0 16px;
+    background: transparent;
+    border: 0;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .pill-btn + .pill-btn { border-left: 1px solid var(--line-strong); }
+  .pill-btn:hover { color: var(--accent); background: var(--bg-panel-alt); }
+  .pill-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }  /* inset: the pill clips outside outlines */
+  .pill-status { font-family: var(--font-mono); font-size: 0.7rem; color: var(--ink-soft); min-height: 1em; }
+
   .theme-toggle { display: flex; gap: 6px; align-items: center; }
   #themeSwatches { display: flex; gap: 6px; align-items: center; }
   .theme-toggle .lbl {
@@ -565,6 +599,8 @@
   @media screen and (max-width: 400px) {
     .topbar { gap: 10px; }
     .backlink { font-size: 0.68rem; padding: 6px 9px; }
+    .pill-lbl { display: none; }          /* icons only on very small phones; aria-labels still name them */
+    .pill-btn { padding: 0 14px; }
     h1 { font-size: 1.32rem; }
   }
 
@@ -684,9 +720,24 @@
     <a class="backlink" href="https://www.postmillenniumrenaissance.com">
       <span class="arw">←</span> Post Millennium Renaissance
     </a>
-    <div class="theme-toggle" role="group" aria-label="Color scheme">
-      <span class="lbl">Theme</span>
-      <span id="themeSwatches"><!-- generated from THEMES array by renderThemeSwatches() --></span>
+    <div class="topbar-actions">
+      <!-- One oval holding two buttons: Print (printer icon) and Share (paper airplane).
+           Icons are inline SVG so the file stays zero-dependency. -->
+      <div class="action-pill" role="group" aria-label="Print or share">
+        <button type="button" class="pill-btn" id="printBtn" title="Print or save as PDF" aria-label="Print or save as PDF">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 9V3h10v6"/><rect x="3.5" y="9" width="17" height="8" rx="1.5"/><path d="M7 14h10v7H7z"/></svg>
+          <span class="pill-lbl">Print</span>
+        </button>
+        <button type="button" class="pill-btn" id="shareBtn" title="Share this page" aria-label="Share this page">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          <span class="pill-lbl">Share</span>
+        </button>
+      </div>
+      <span class="pill-status" id="actionStatus" role="status" aria-live="polite"></span>
+      <div class="theme-toggle" role="group" aria-label="Color scheme">
+        <span class="lbl">Theme</span>
+        <span id="themeSwatches"><!-- generated from THEMES array by renderThemeSwatches() --></span>
+      </div>
     </div>
   </div>
 
@@ -1129,6 +1180,69 @@ document.querySelectorAll('[data-set-theme]').forEach(btn=>{
     btn.setAttribute('aria-pressed','true');
   });
 });
+
+/* ---------- Print + Share pill ----------
+   Printing from inside an iframe (the PMR wrapper page, a Pinkbike embed) cannot
+   paginate: the wrapper is overflow:hidden, so a plain Ctrl+P printed ONE page cut off
+   after three towns. So when framed, Print opens this tool in its own tab with #print,
+   and that tab prints itself. Opened directly, Print just calls window.print(). */
+const IN_FRAME = window.self !== window.top;
+const TOOL_URL = location.href.split('#')[0];
+/* Link that Share sends. Leave "" to share the tool's own address (the GitHub Pages URL).
+   Set it to the branded page, e.g. "https://postmillenniumrenaissance.com/<slug>/", to
+   share that instead. (Reading the parent page's URL from inside the frame isn't possible
+   across origins, so it has to be written here.) */
+const SHARE_URL_OVERRIDE = "";
+const STATUS_CLEAR_MS = 2500;   // how long "Link copied" stays under the buttons
+const PRINT_DELAY_MS = 400;     // lets fonts/layout settle before the #print tab opens the print dialog
+
+let statusTimer;
+function flashStatus(msg){
+  const el = document.getElementById('actionStatus');
+  el.textContent = msg;
+  clearTimeout(statusTimer);
+  statusTimer = setTimeout(() => { el.textContent = ''; }, STATUS_CLEAR_MS);
+}
+
+document.getElementById('printBtn').addEventListener('click', () => {
+  if(!IN_FRAME){ window.print(); return; }
+  const w = window.open(TOOL_URL + '#print', '_blank');
+  if(w){ w.opener = null; }
+  else { flashStatus('Pop-up blocked — allow pop-ups to print'); }
+});
+
+/* Share order: the phone/OS share sheet if the browser offers one (and the frame is
+   allowed to use it) → copy the link to the clipboard → last resort, show the link. */
+document.getElementById('shareBtn').addEventListener('click', async () => {
+  const url = SHARE_URL_OVERRIDE || TOOL_URL;
+  if(navigator.share){
+    try{
+      await navigator.share({ title: document.title, text: 'Who builds trails with a partner — and who goes it alone.', url });
+      return;
+    }catch(e){
+      if(e && e.name === 'AbortError') return;   // user closed the sheet; not an error
+    }
+  }
+  try{
+    await navigator.clipboard.writeText(url);
+    flashStatus('Link copied');
+    return;
+  }catch(e){ /* clipboard blocked (common inside iframes) — try the legacy route */ }
+  const ta = document.createElement('textarea');
+  ta.value = url; ta.setAttribute('readonly',''); ta.style.cssText = 'position:fixed;opacity:0';
+  document.body.appendChild(ta); ta.select();
+  let ok = false;
+  try{ ok = document.execCommand('copy'); }catch(e){}
+  document.body.removeChild(ta);
+  if(ok) flashStatus('Link copied');
+  else window.prompt('Copy this link:', url);
+});
+
+/* The new tab opened by Print-from-a-frame: strip the hash, then print. */
+if(location.hash === '#print' && !IN_FRAME){
+  history.replaceState(null, '', TOOL_URL);
+  setTimeout(() => window.print(), PRINT_DELAY_MS);
+}
 
 /* ---------- Init ---------- */
 document.documentElement.setAttribute('data-theme','sandstone');
