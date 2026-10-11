@@ -398,6 +398,9 @@
     margin: 34px 0 12px;
     letter-spacing: -0.01em;
   }
+  /* Without this, links in the write-up fall back to the browser's default blue/purple,
+     which is only 1.89:1 against the Alpenglow background — nearly invisible. */
+  .prose a { color: var(--accent); text-underline-offset: 2px; }
   .prose strong { color: var(--ink); font-weight: 700; }
   .prose em { color: var(--accent); font-style: italic; }
 
@@ -499,7 +502,10 @@
     max-width: 80ch;
   }
 
-  @media (max-width: 680px) {
+  /* "screen and" is deliberate: a printed page can be narrower than 680px (A4 with
+     generous margins is ~680px of layout width), which would flip the printed table
+     into the phone card layout. Print has its own layout in the PRINT block below. */
+  @media screen and (max-width: 680px) {
     body { padding: 0 14px 60px; }
     .hero { padding: 32px 0 18px; }
     h1 { font-size: clamp(1.4rem, 6vw, 1.9rem); }
@@ -556,10 +562,117 @@
     body.compact #grid td:nth-child(1) { margin-bottom: 3px; }
   }
 
-  @media (max-width: 400px) {
+  @media screen and (max-width: 400px) {
     .topbar { gap: 10px; }
     .backlink { font-size: 0.68rem; padding: 6px 9px; }
     h1 { font-size: 1.32rem; }
+  }
+
+  /* ============================================================
+     PRINT / SAVE-AS-PDF
+     Design rules (each one fixes something that was measured to break):
+     1. Always prints LIGHT, whatever theme is on screen. Alpenglow is light text on
+        a dark page; browsers drop backgrounds by default, so it printed as pale
+        grey on white. Print re-declares every theme variable below.
+     2. Nothing meaningful depends on a background colour. Backgrounds are optional
+        in print dialogs, so badges, bars and grid dividers use borders instead.
+     3. Table is forced to fit the page width (it used to clip the Confidence column).
+     4. Every printed text colour is >= 7:1 on white; hairlines are >= 3:1.
+     5. External URLs are printed out, because paper can't be clicked.
+     Colours: ink #111 18.9:1 · soft #3b3b3b 11.2:1 · accent #8a3510 8.1:1
+              yes #1d5a2a 8.2:1 · no #9b1c0c 8.2:1 · partial #6e4c00 7.8:1
+     ============================================================ */
+  .print-only { display: none; }
+
+  @media print {
+    /* No fixed paper size, so Letter and A4 both work. Margin boxes (page numbers)
+       need Chromium 131+; other browsers silently ignore them. */
+    @page {
+      margin: 0.6in 0.6in 0.75in;
+      @bottom-left  { content: "Post Millennium Renaissance · Colorado Trail Partnership Atlas"; font: 7.5pt sans-serif; color: #3b3b3b; }
+      @bottom-right { content: "Page " counter(page) " of " counter(pages); font: 7.5pt sans-serif; color: #3b3b3b; }
+    }
+
+    /* ---- 1. Force the light print palette over whichever theme is active ---- */
+    :root, html[data-theme] {
+      --bg: #ffffff;  --bg-panel: #ffffff;  --bg-panel-alt: #f0f0f0;
+      --ink: #111111; --ink-soft: #3b3b3b;
+      --line: #8c8c8c; --line-strong: #5c5c5c;
+      --accent: #8a3510; --accent-soft: #5a5a5a;
+      --yes: #1d5a2a; --yes-bg: #ffffff;
+      --no: #9b1c0c;  --no-bg: #ffffff;
+      --partial: #6e4c00; --partial-bg: #ffffff;
+      --shadow: transparent;
+    }
+    html { font-size: 14px; }  /* 1rem = 10.5pt; every rem size in the file scales from here */
+    body { background: #fff; color: #111; padding: 0; line-height: 1.45; }
+    * { box-shadow: none !important; transition: none !important; }
+
+    /* ---- 2. Remove screen-only chrome ---- */
+    .topbar, .controls, .sortcaret, .empty-note { display: none !important; }
+    .print-only { display: block; }
+    .print-masthead {
+      display: flex; justify-content: space-between; gap: 12pt;
+      font-family: var(--font-mono); font-size: 8pt; letter-spacing: 0.04em;
+      color: var(--ink-soft); padding-bottom: 6pt; border-bottom: 1pt solid var(--line-strong);
+    }
+    .print-context { font-size: 8.5pt; color: var(--ink); margin: 10pt 0 8pt; padding: 5pt 8pt; border: 1pt solid var(--line-strong); }
+
+    /* ---- Layout / spacing ---- */
+    .hero { padding: 16pt 0 8pt; }
+    h1 { font-size: 24pt; max-width: none; }
+    section { margin-top: 22pt; }
+    .thesis { grid-template-columns: repeat(4, 1fr); gap: 6pt; background: none; border: none; margin-top: 16pt; }
+    .thesis-cell { border: 1pt solid var(--line-strong); padding: 10pt; }
+    .thesis-num { font-size: 22pt; }
+    .cases { grid-template-columns: repeat(3, 1fr); gap: 8pt; }
+    .case { padding: 10pt; }
+    .case-stat { font-size: 17pt; }
+    footer { margin-top: 24pt; }
+    .prose, .sec-sub, .lede, .coalition-note, .disclaimer { max-width: none; }
+
+    /* ---- 3. Table: fit the page, never scroll, never split a row ---- */
+    .table-scroll { overflow: visible; border: none; }
+    table, body.compact table { min-width: 0 !important; width: 100%; font-size: 8.5pt; }
+    thead th { position: static; font-size: 7.5pt; padding: 6pt 5pt; background: var(--bg-panel-alt); border-bottom: 1.5pt solid var(--line-strong); white-space: normal; }
+    tbody td { padding: 6pt 5pt; border-bottom: 0.75pt solid var(--line); }
+    thead { display: table-header-group; }   /* repeats the header on every page */
+    tr, .case, .thesis-cell, .coalition-note, .caveat, .pullquote, .principles li { break-inside: avoid; }
+    th:nth-child(1), td:nth-child(1) { width: 38%; }
+    .town-name { font-size: 9.5pt; }
+    .town-note { font-size: 7.5pt; color: var(--ink-soft); }
+    tbody tr, tbody tr:hover { background: none; }
+
+    /* Bars/badges rebuilt from borders so they survive "Background graphics: off" */
+    .miles-bar { height: 0; background: none; border-top: 4pt solid var(--accent-soft); border-radius: 0; opacity: 1; max-width: 90pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .badge { background: none; border: 1pt solid currentColor; font-size: 7.5pt; }
+    .b-yes { border-style: solid; }
+    .b-no  { border-style: dashed; }   /* shape + word, so Yes/No still differ in grayscale */
+    .conf { font-size: 7.5pt; color: var(--ink-soft); }
+    .conf.high, .conf.med, .conf.low { border-color: var(--line-strong); color: var(--ink); }
+    .conf.high { border-width: 1.5pt; font-weight: 700; }
+
+    /* Micro mono labels: floor at 7.5pt so they stay legible on paper */
+    .eyebrow, .sec-idx, .case-tag, .foot-meta, .thesis-lbl, .case-loc, .case-stat-lbl { font-size: 8pt; }
+    .coalition-note, .caveat, .case p, .disclaimer { font-size: 8.5pt; }
+    .prose p { font-size: 10pt; margin-bottom: 9pt; }
+    .principles p { font-size: 9.5pt; }
+
+    /* ---- Pagination: keep headings with their text, no stranded lines ---- */
+    h2, h3, h4, .sec-head, .sec-sub { break-after: avoid; }
+    p { orphans: 3; widows: 3; }
+
+    /* ---- 5. Print the URL behind every external link ---- */
+    a { color: var(--ink); text-decoration: none; }
+    .prose a, .coalition-note a { color: var(--accent); text-decoration: underline; }
+    .prose a[href^="http"]::after,
+    .coalition-note a[href^="http"]::after {
+      content: " (" attr(href) ")"; font-size: 7.5pt; font-family: var(--font-mono);
+      color: var(--ink-soft); word-break: break-all; font-weight: 400; font-style: normal;
+    }
+    /* Per-row "Source ↗" link: hide the arrow text, show the real address */
+    .town-source { font-size: 0; display: block; margin-top: 3pt; border: none; }
+    .town-source::after { content: "Source: " attr(href); font-size: 7pt; font-family: var(--font-mono); color: var(--ink-soft); word-break: break-all; }
   }
 </style>
 </head>
@@ -575,6 +688,13 @@
       <span class="lbl">Theme</span>
       <span id="themeSwatches"><!-- generated from THEMES array by renderThemeSwatches() --></span>
     </div>
+  </div>
+
+  <!-- Print-only header (hidden on screen). Filled in by updatePrintContext() so a
+       printed sheet always states the date and which filters/sort produced the table. -->
+  <div class="print-only print-masthead">
+    <span>POST MILLENNIUM RENAISSANCE · postmillenniumrenaissance.com</span>
+    <span id="printStamp"></span>
   </div>
 
   <!-- ============ HERO ============ -->
@@ -633,6 +753,8 @@
         <button class="chip" id="viewToggle" data-mode="full" aria-pressed="false">Compact</button>
       </div>
     </div>
+
+    <div class="print-only print-context" id="printContext"></div>
 
     <div class="table-scroll">
       <table id="grid">
@@ -915,7 +1037,31 @@ function applyFiltersAndRender(){
   render(rows);
   document.getElementById('empty').classList.toggle('row-hidden', rows.length>0);
   document.getElementById('grid').style.display = rows.length>0 ? '' : 'none';
+  updatePrintContext(rows.length);
 }
+
+/* ---------- Print header text ----------
+   The filter controls are hidden in print, so without this a printed table filtered
+   to "Partners · Douglas" would look like the complete survey. Runs on every filter
+   change and again on beforeprint (the date should be the print date, not load date). */
+function updatePrintContext(shown){
+  const parts = [];
+  if(filterStatus!=="all") parts.push(filterStatus==="yes" ? "Partners only" : "No partner only");
+  if(filterCounty!=="all") parts.push(filterCounty + " County");
+  if(searchQuery) parts.push('search "' + searchQuery + '"');
+  if(sortKey){
+    const th = document.querySelector(`th[data-sort="${sortKey}"]`);
+    const dirLabel = th.dataset.type==="str" ? (sortDir===1 ? "A→Z" : "Z→A") : (sortDir===1 ? "low→high" : "high→low");
+    parts.push("sorted by " + th.textContent.replace('↕','').trim() + " (" + dirLabel + ")");
+  }
+  if(document.body.classList.contains('compact')) parts.push("compact view");
+  const n = (typeof shown==="number") ? shown : DATA.length;
+  document.getElementById('printContext').textContent =
+    `Table shows ${n} of ${DATA.length} towns` + (parts.length ? " — " + parts.join(" · ") : " — all towns, no filters");
+  document.getElementById('printStamp').textContent =
+    "PRINTED " + new Date().toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}).toUpperCase();
+}
+window.addEventListener('beforeprint', () => updatePrintContext(document.querySelectorAll('#tbody tr').length));
 
 /* ---------- Sorting ---------- */
 let sortKey = null, sortDir = 1;
