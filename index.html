@@ -21,24 +21,26 @@
     --transition: 0.25s ease;
   }
 
-  /* Scheme 1: SANDSTONE — Front Range foothills, gambel oak, iron-oxide dirt */
-  html[data-theme="sandstone"] {
-    --bg: #efe7d8;
-    --bg-panel: #f8f3e9;
-    --bg-panel-alt: #f2ead9;
-    --ink: #3a2f26;
-    --ink-soft: #6b5d4f;
-    --line: #d8c9b0;
-    --line-strong: #b79f7d;
-    --accent: #a8501f;
-    --accent-soft: #c9793f;
-    --yes: #4a6b3a;
-    --yes-bg: #dfe7cf;
-    --no: #9c3320;
-    --no-bg: #f1d9ce;
-    --partial: #8a6d1f;
-    --partial-bg: #ece0bd;
-    --shadow: rgba(90, 70, 45, 0.14);
+  /* Scheme 1 (DEFAULT): BLUE HOUR — cool blue-grey dusk light, navy ink, copper accent.
+     Replaced Sandstone (cream/tan read as lemony). Accent stays copper so the page keeps
+     the PMR rust identity and matches the print palette. All text pairs are >= 4.5:1. */
+  html[data-theme="bluehour"] {
+    --bg: #dfe9f3;
+    --bg-panel: #f8fbfe;
+    --bg-panel-alt: #e9f0f8;
+    --ink: #0e2238;
+    --ink-soft: #3f566e;
+    --line: #c0d0e1;
+    --line-strong: #6a86a4;
+    --accent: #a8470f;
+    --accent-soft: #d6783a;
+    --yes: #1d6643;
+    --yes-bg: #d6ecdf;
+    --no: #a8301f;
+    --no-bg: #f7dcd5;
+    --partial: #7d5500;
+    --partial-bg: #f2e4c2;
+    --shadow: rgba(14, 34, 56, 0.14);
   }
 
   /* Scheme 2: ALPENGLOW — dusk over the Divide, deep indigo + warm rim light */
@@ -978,7 +980,7 @@ const COMTB_MEMBER_COUNT = "20+";
    pressed/active state all render themselves from this list.
    ============================================================ */
 const THEMES = [
-  { key:"sandstone", label:"Sandstone", bg:"#efe7d8", accent:"#a8501f" },
+  { key:"bluehour",  label:"Blue Hour",  bg:"#dfe9f3", accent:"#a8470f" },
   { key:"alpenglow", label:"Alpenglow", bg:"#1e212b", accent:"#e8834a" },
   { key:"meridian",  label:"Meridian",  bg:"#ffffff", accent:"#1f6f8b" }
 ];
@@ -1246,7 +1248,7 @@ if(location.hash === '#print' && !IN_FRAME){
 }
 
 /* ---------- Init ---------- */
-document.documentElement.setAttribute('data-theme','sandstone');
+document.documentElement.setAttribute('data-theme','bluehour');
 applyFiltersAndRender();
 </script>
 </body>
