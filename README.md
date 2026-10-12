@@ -24,7 +24,7 @@ This is the most important thing in this README. The original survey was compile
 
 - **Sortable/filterable data table** — 23 towns, 8 counties, click any column header to sort, filter chips for partnership status and county, live search, and a Compact/Full detail toggle for scanning quickly on a small screen.
 - **Per-row source citations** — most rows carry a direct link to the town's own parks/trails page or the news article the entry is based on, shown as a small "Source ↗" link under the town's note. Rows without one just don't show the link.
-- **Three color themes** (Sandstone / Alpenglow / Meridian), consistent with the rest of the PMR tool suite.
+- **Three color themes** (Blue Hour / Alpenglow / Meridian), consistent with the rest of the PMR tool suite.
 - **Mobile-first table** — below 680px the table becomes stacked cards with a colored left edge (green = partner, red = no partner) instead of a horizontally-scrolling grid.
 - **Write-up section** making the "why partner" case: grant eligibility, volunteer labor, trail design/sustainability, and political constituency — anchored with real numbers from COMBA, Medicine Wheel, Boulder Mountainbike Alliance, CAMBA (Wisconsin), and Northwest Arkansas/Bentonville, plus a pointer to the [Trail Advocacy Atlas](https://www.postmillenniumrenaissance.com/trail-advocacy-atlas/) for the national picture (370+ nonprofit trail organizations).
 - **COMTB callout** — links to the Colorado Mountain Bike Coalition and its member directory, framing local partnerships as access to a statewide network, not just a local volunteer crew.
@@ -72,7 +72,7 @@ You don't need to touch any HTML or CSS to update a town's numbers. Open `index.
 **To add a new "why partner" case study** (the CAMBA / NWA Trailblazers / COMBA & Jeffco cards further down the page), search for `const CASE_STUDIES = [`, just below `DATA`. Same pattern — copy an object, change `tag`, `name`, `loc`, `stat`, `statLbl`, and `body`, add a comma. The cards render themselves; no HTML editing needed.
 
 **To add a new color theme**, search for `const THEMES = [`. It's a two-step process now:
-1. Add a new `html[data-theme="yourkey"] { ... }` block up in the `<style>` section, copying the variable list from an existing theme (sandstone, alpenglow, or meridian).
+1. Add a new `html[data-theme="yourkey"] { ... }` block up in the `<style>` section, copying the variable list from an existing theme (bluehour, alpenglow, or meridian).
 2. Add one entry to the `THEMES` array with the same key and your theme's `--bg`/`--accent` hex values (used to draw the little swatch preview button).
 
 The swatch button, its click handler, and the pressed/active state all generate themselves from that array — you don't need to add or edit any button markup.
