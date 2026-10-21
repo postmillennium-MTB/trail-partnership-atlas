@@ -126,3 +126,11 @@ If you're pasting this file into a new Claude conversation to make a change, her
 Built for **Post Millennium Renaissance MTB** — [postmillenniumrenaissance.com](https://www.postmillenniumrenaissance.com) — as part of ongoing trail advocacy work in Castle Rock, Colorado. No build tooling, no dependencies, single HTML file, deploys directly to GitHub Pages.
 
 *Last substantive data update: August 2026 (23 towns, 8 counties — added Conifer, refreshed Idaho Springs mileage, added source citations to every row). If you're reading this more than a few months later, assume at least a few mileage figures and possibly a partnership status or two have changed — reverify before citing anything in a formal setting.*
+
+## License
+
+Copyright (c) 2026 Post Millennium Renaissance (https://www.postmillenniumrenaissance.com).
+
+Released under the [PolyForm Noncommercial License 1.0.0](LICENSE). In short: free to use, copy, modify and share for any noncommercial purpose, including personal use, research, education, and use by charities, environmental-protection organizations and government institutions. Commercial use needs a separate license; ask through postmillenniumrenaissance.com. Copies must keep the `Required Notice:` line in `LICENSE`. The license text controls over this summary.
+
+Facts, figures and quotations taken from third-party studies and sources remain the property of their authors. This license covers only this project's own code, selection and arrangement of material, and original text. Third-party components keep their own licenses.
