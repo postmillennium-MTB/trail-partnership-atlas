@@ -1,12 +1,32 @@
 <!DOCTYPE html>
+<!-- (c) 2026 Post Millennium Renaissance (https://www.postmillenniumrenaissance.com/). SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0. See LICENSE. -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Colours the phone browser bar. Starts as the default theme's page colour; syncThemeColor() keeps it in step. -->
+<meta name="theme-color" content="#dfe9f3">
 <link rel="icon" href="favicon.ico">
 <link rel="icon" type="image/png" href="favicon-32x32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Colorado Trail Partnership Atlas — PMR</title>
+<!-- Search + social-preview tags. The description, title and image deliberately match the PMR wrapper page
+     (postmillenniumrenaissance.com/trail-partnership-atlas/) so a link to this file previews the same as a
+     link to the branded page. Change them in both places. No og:url: a preview should use whichever address
+     was actually shared (this one or the branded page). The image is the site-wide PMR card (1200x630). -->
+<meta name="description" content="Compares Front Range Colorado towns on nonprofit trail-advocacy partnerships — COMBA, Medicine Wheel, Boulder MBA, and others — making the case that partnership is the regional norm, not the exception.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Post Millennium Renaissance">
+<meta property="og:title" content="Trail Partnership Atlas — Post Millennium Renaissance">
+<meta property="og:description" content="Compares Front Range Colorado towns on nonprofit trail-advocacy partnerships — COMBA, Medicine Wheel, Boulder MBA, and others — making the case that partnership is the regional norm, not the exception.">
+<meta property="og:image" content="https://postmillenniumrenaissance.com/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A mountain biker on a dirt singletrack trail with snow-capped peaks and pine forest behind.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Trail Partnership Atlas — Post Millennium Renaissance">
+<meta name="twitter:description" content="Compares Front Range Colorado towns on nonprofit trail-advocacy partnerships — COMBA, Medicine Wheel, Boulder MBA, and others — making the case that partnership is the regional norm, not the exception.">
+<meta name="twitter:image" content="https://postmillenniumrenaissance.com/og-image.jpg">
 <style>
   /* ============================================================
      THEME SYSTEM — three schemes toggled via data-theme on <html>
@@ -437,6 +457,16 @@
   .caveat strong { color: var(--ink); }
   .caveat p + p { margin-top: 10px; }   /* a caveat box can hold more than one paragraph */
 
+  /* ---------- Footnotes: numbered marker in a row, matching line under the table ---------- */
+  .fn-mark { font-size: 0.72rem; font-weight: 700; margin-left: 3px; }
+  .fn-mark a { color: var(--accent); text-decoration: none; padding: 0 2px; }
+  .fn-mark a:hover { text-decoration: underline; }
+  .fn-mark a:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; }
+  .footnotes { margin: 14px 0 0; padding-left: 1.5em; font-size: 0.8rem; color: var(--ink-soft); line-height: 1.5; }
+  .footnotes li { margin-top: 4px; }
+  .footnotes strong { color: var(--ink); }
+  .footnotes a { color: var(--accent); text-underline-offset: 2px; }
+
   /* ---------- Prose (write-up) ---------- */
   .prose { max-width: 72ch; }
   .prose p { margin-bottom: 18px; font-size: 1.02rem; }
@@ -541,6 +571,13 @@
   .foot-meta { font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-soft); line-height: 1.7; }
   .foot-meta a { color: var(--accent); text-decoration: none; }
   .foot-meta a:hover { text-decoration: underline; }
+
+  /* License line under the footer. Borrows colour and font from its surroundings so it reads in all
+     three themes; the border is a neutral grey that works on light and dark. */
+  .pmr-license { box-sizing: border-box; clear: both; width: 100%; margin: 24px 0 0; padding: 10px 16px 14px; border-top: 1px solid rgba(128,128,128,.35); background: transparent; color: inherit; font-family: inherit; font-size: 12px; line-height: 20px; text-align: center; letter-spacing: normal; text-transform: none; }
+  .pmr-license p { margin: 0 auto; padding: 0; max-width: none; font: inherit; color: inherit; }
+  .pmr-license a { position: relative; display: inline; color: inherit; text-decoration: underline; }
+  .pmr-license a::after { content: ""; position: absolute; left: -6px; right: -6px; top: -10px; bottom: -10px; }   /* enlarges the tap target without changing the look */
 
   .disclaimer {
     margin-top: 24px;
@@ -722,7 +759,8 @@
 
     /* Micro mono labels: floor at 7.5pt so they stay legible on paper */
     .eyebrow, .sec-idx, .case-tag, .foot-meta, .thesis-lbl, .case-loc, .case-stat-lbl { font-size: 8pt; }
-    .coalition-note, .caveat, .case p, .disclaimer { font-size: 8.5pt; }
+    .coalition-note, .caveat, .case p, .disclaimer, .footnotes { font-size: 8.5pt; }
+    .footnotes, .pmr-license { break-inside: avoid; }
     .prose p { font-size: 10pt; margin-bottom: 9pt; }
     .principles p { font-size: 9.5pt; }
 
@@ -732,9 +770,12 @@
 
     /* ---- 5. Print the URL behind every external link ---- */
     a { color: var(--ink); text-decoration: none; }
-    .prose a, .coalition-note a { color: var(--accent); text-decoration: underline; }
+    .prose a, .coalition-note a, .town-note a, .footnotes a { color: var(--accent); text-decoration: underline; }
+    .fn-mark a { color: var(--ink); text-decoration: none; }   /* the marker's href is an in-page anchor, not a URL to print */
     .prose a[href^="http"]::after,
-    .coalition-note a[href^="http"]::after {
+    .coalition-note a[href^="http"]::after,
+    .town-note a[href^="http"]::after,
+    .footnotes a[href^="http"]::after {
       content: " (" attr(href) ")"; font-size: 7.5pt; font-family: var(--font-mono);
       color: var(--ink-soft); word-break: break-all; font-weight: 400; font-style: normal;
     }
@@ -860,6 +901,9 @@
     </div>
     <div class="empty-note row-hidden" id="empty">No towns match those filters.</div>
 
+    <!-- Footnotes are built from DATA rows that carry a `foot` field by renderFootnotes(). -->
+    <ol class="footnotes" id="footnotes" aria-label="Footnotes" hidden></ol>
+
     <div class="caveat">
       <p><strong>Reading the mileage column honestly.</strong> I made every attempt to account for trail mileage accurately. Many towns report their trail miles as a single number that includes paved paths (similar to sidewalks) as well as dirt singletrack. I have tried to include only dirt singletrack that is open to mountain bikes.</p>
       <p>Several Jefferson County entries (Littleton, Morrison, Evergreen) reference trails in <em>Jeffco Open Space</em> parks near those towns — built with COMBA — rather than municipally owned trails. That distinction actually strengthens the case: the region's dominant land manager treats nonprofit partnership as standard practice. Note also that Highlands Ranch is marked <strong>No</strong> — its trails are managed by the HRCA, a homeowners association organized as a nonprofit, not a mountain-bike trail-advocacy organization like the COMTB member groups. The counter-examples that hold up against Castle Rock are Idaho Springs and Black Hawk — small towns that are their own primary land managers and still chose the partnership route.</p>
@@ -892,7 +936,7 @@
         </li>
         <li>
           <h4>Volunteer labor at a scale no crew can match</h4>
-          <p>COMBA volunteers contribute more than 7,000 hours of trail work every year. Boulder Mountainbike Alliance has logged over 24,000 volunteer hours across 150+ project days. For grant-match purposes that labor is valued at roughly $35 per hour (Independent Sector's 2024 national figure is $34.79) — real, bankable capacity that expands what the department can deliver without expanding its payroll.</p>
+          <p>COMBA volunteers contribute more than 7,000 hours of trail work every year. Boulder Mountainbike Alliance has logged over 24,000 volunteer hours across 150+ project days. For grant-match purposes that labor is valued at roughly $36 per hour (Independent Sector's 2025 national figure is $36.14) — real, bankable capacity that expands what the department can deliver without expanding its payroll.</p>
         </li>
         <li>
           <h4>Specialized design expertise and sustainability</h4>
@@ -923,7 +967,7 @@
     </div>
 
     <p class="disclaimer">
-      <strong>Sources &amp; confidence.</strong> Partnership status is drawn from the organizations' own project pages and public agency records (Colorado Mountain Bike Coalition, COMBA, Medicine Wheel Trail Advocates, Boulder Mountainbike Alliance, Jefferson County Open Space) and is high-confidence. Singletrack mileage figures are estimates compiled from Trailforks, agency trail pages, and COTREX, and vary by source depending on how paved and soft-surface segments are counted — verify against current data before formal use. Castle Rock's 40-mile figure is per the project author. Population: U.S. Census Bureau city and town estimates (Vintage 2025, July 1, 2025) and the 2020 Census (PL 94-171) for unincorporated Highlands Ranch and Evergreen. Volunteer-hour value: Independent Sector, 2024. National figures: CAMBA (cambatrails.org, U.S. Forest Service), NWA economic impact (University of Arkansas 2023 study; Walton Family Foundation). Compiled for Post Millennium Renaissance MTB as a brainstorming and advocacy resource — data may have changed since compilation.
+      <strong>Sources &amp; confidence.</strong> Partnership status is drawn from the organizations' own project pages and public agency records (Colorado Mountain Bike Coalition, COMBA, Medicine Wheel Trail Advocates, Boulder Mountainbike Alliance, Jefferson County Open Space) and is high-confidence. Singletrack mileage figures are estimates compiled from Trailforks, agency trail pages, and COTREX, and vary by source depending on how paved and soft-surface segments are counted — verify against current data before formal use. Castle Rock's 40-mile figure is per the project author. Population: U.S. Census Bureau city and town estimates (Vintage 2025, July 1, 2025) and the 2020 Census (PL 94-171) for unincorporated Highlands Ranch and Evergreen. Volunteer-hour value: Independent Sector, 2025 ($36.14 per hour, built on preliminary wage data). National figures: CAMBA (cambatrails.org, U.S. Forest Service), NWA economic impact (University of Arkansas 2023 study; Walton Family Foundation). Compiled for Post Millennium Renaissance MTB as a brainstorming and advocacy resource — data may have changed since compilation.
     </p>
   </section>
 
@@ -938,6 +982,10 @@
       No solutions, only tradeoffs.
     </div>
   </footer>
+
+  <!-- License notice, same wording as the other PMR tools. Do not remove or reword: the LICENSE file
+       and the SPDX comment at the top of this file reference it. -->
+  <div class="pmr-license"><p>&copy; 2026 Post Millennium Renaissance &middot; <a href="https://www.postmillenniumrenaissance.com/" target="_top">postmillenniumrenaissance.com</a> &middot; Free for noncommercial use under <a href="https://polyformproject.org/licenses/noncommercial/1.0.0/" target="_blank" rel="noopener noreferrer">PolyForm Noncommercial 1.0.0</a>. Source studies remain the property of their authors.</p></div>
 
 </div>
 
@@ -955,9 +1003,12 @@
    nearby: true when the miles are in nearby Jeffco Open Space parks rather than trails
         the town owns. Puts a † on the per-capita figure, which would otherwise flatter
         the town.
+   foot: optional footnote (HTML allowed). Puts a numbered marker beside the row's miles and
+        a matching line under the table. Numbers follow the order of rows in DATA, so a
+        marker keeps its number when the table is sorted or filtered.
    ============================================================ */
 const DATA = [
-  { town:"Castle Rock", county:"Douglas", status:"no", org:"None — in-house + Timberline Trail Craft (for-profit)", miles:40, conf:3, pop:83815, foothills:true, source:"https://www.crgov.com/1985/Open-Space-and-Trails", note:"Only foothills municipality in this survey that declines nonprofit partnership." },
+  { town:"Castle Rock", county:"Douglas", status:"no", org:"None — in-house + Timberline Trail Craft (for-profit)", miles:40, conf:3, pop:83815, foothills:true, source:"https://www.crgov.com/1985/Open-Space-and-Trails", note:"Only foothills municipality in this survey with no mountain-bike trail-advocacy nonprofit partner.", foot:"The 40 miles excludes <a href=\"https://www.crgov.com/lostcanyonranch\" target=\"_blank\" rel=\"noopener\">Lost Canyon Ranch Open Space</a> (opened 2026), where the trails are hiking-only." },
   { town:"Parker", county:"Douglas", status:"no", org:"None", miles:2, conf:3, pop:65985, foothills:false, source:"https://www.parkerrec.com/301/PARKS-TRAILS", note:"Parker's own Parks &amp; Trails map (41 total mi, mostly paved) shows very little soft surface — supports the ~2 mi natural-surface estimate." },
   { town:"Highlands Ranch", county:"Douglas", status:"no", org:"None — HRCA (a nonprofit HOA) manages trails in-house", miles:26, conf:3, pop:103444, popYear:2020, foothills:true, source:"https://hrcaonline.org/Recreation/Backcountry-Wilderness-Area/Trails", note:"HRCA is a homeowners association structured as a nonprofit, not a mountain-bike trail advocacy organization. 8,200-acre Backcountry Wilderness Area." },
   { town:"Littleton", county:"Jefferson", status:"yes", org:"COMBA", miles:14, conf:3, pop:46246, nearby:true, source:"https://www.jeffco.us/1208/Deer-Creek-Canyon-Park", note:"Deer Creek Canyon Park is Jeffco Open Space (Littleton mailing address, outside city limits). Some trails hiker/equestrian-only." },
@@ -1086,6 +1137,23 @@ function perCapitaCell(d){
   return `<span class="miles-val">${fmtRatio(v)}</span>${dag}`;
 }
 
+/* ---------- Footnotes (DATA rows that carry a `foot`) ----------
+   The number is the row's position among footnoted rows in DATA, not its position on screen,
+   so a marker keeps its number through sorting and filtering. */
+const FOOTNOTE_ROWS = DATA.filter(d => d.foot);
+function footMark(d){
+  const n = FOOTNOTE_ROWS.indexOf(d) + 1;
+  return n ? `<sup class="fn-mark"><a href="#fn-${n}" aria-label="Footnote ${n}">${n}</a></sup>` : '';
+}
+// Lists only the footnotes whose rows are on screen, so a filtered table never shows an orphan note.
+// `value` pins each <li> to its marker number even when earlier footnotes are hidden.
+function renderFootnotes(shownRows){
+  const list = document.getElementById('footnotes');
+  const items = FOOTNOTE_ROWS.map((d,i) => ({d, n:i+1})).filter(x => shownRows.includes(x.d));
+  list.hidden = items.length === 0;
+  list.innerHTML = items.map(x => `<li id="fn-${x.n}" value="${x.n}"><strong>${x.d.town}.</strong> ${x.d.foot}</li>`).join('');
+}
+
 function render(rows){
   tbody.innerHTML = rows.map(d => `
     <tr data-town="${d.town.toLowerCase()}" data-org="${d.org.toLowerCase()}" data-status="${d.status}" data-county="${d.county}">
@@ -1098,7 +1166,7 @@ function render(rows){
       <td data-label="Partner?">${statusBadge(d.status)}</td>
       <td class="col-org" data-label="Partner">${d.org}</td>
       <td data-label="Singletrack">
-        <span class="miles-val">${d.miles} mi</span>
+        <span class="miles-val">${d.miles} mi</span>${footMark(d)}
         <!-- minimum 6% width so low-mileage towns still show a visible/tappable bar -->
         <div class="miles-bar" style="width:${Math.max(6,(d.miles/maxMiles)*100)}%"></div>
       </td>
@@ -1193,6 +1261,7 @@ function applyFiltersAndRender(){
   });
   rows = sortRows(rows);
   render(rows);
+  renderFootnotes(rows);
   document.getElementById('empty').classList.toggle('row-hidden', rows.length>0);
   document.getElementById('grid').style.display = rows.length>0 ? '' : 'none';
   updatePrintContext(rows.length);
@@ -1283,10 +1352,18 @@ viewToggle.addEventListener('click', ()=>{
 });
 
 /* ---------- Theme switcher ---------- */
+// Keeps the phone browser bar (<meta name="theme-color">) matched to the active theme. Reads --bg from the
+// CSS, so the colours stay defined in one place instead of being copied into JS.
+function syncThemeColor(){
+  const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if(meta && bg) meta.setAttribute('content', bg);
+}
 document.querySelectorAll('[data-set-theme]').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     const theme = btn.dataset.setTheme;
     document.documentElement.setAttribute('data-theme', theme);
+    syncThemeColor();
     document.querySelectorAll('[data-set-theme]').forEach(b=>b.setAttribute('aria-pressed','false'));
     btn.setAttribute('aria-pressed','true');
   });
@@ -1357,6 +1434,7 @@ if(location.hash === '#print' && !IN_FRAME){
 
 /* ---------- Init ---------- */
 document.documentElement.setAttribute('data-theme','bluehour');
+syncThemeColor();
 applyFiltersAndRender();
 </script>
 </body>
