@@ -435,6 +435,7 @@
     color: var(--ink-soft);
   }
   .caveat strong { color: var(--ink); }
+  .caveat p + p { margin-top: 10px; }   /* a caveat box can hold more than one paragraph */
 
   /* ---------- Prose (write-up) ---------- */
   .prose { max-width: 72ch; }
@@ -860,7 +861,8 @@
     <div class="empty-note row-hidden" id="empty">No towns match those filters.</div>
 
     <div class="caveat">
-      <strong>Reading the mileage column honestly.</strong> Several Jefferson County entries (Littleton, Morrison, Evergreen) reference trails in <em>Jeffco Open Space</em> parks near those towns — built with COMBA — rather than municipally owned trails. That distinction actually strengthens the case: the region's dominant land manager treats nonprofit partnership as standard practice. Note also that Highlands Ranch is marked <strong>No</strong> — its trails are managed by the HRCA, a homeowners association organized as a nonprofit, not a mountain-bike trail-advocacy organization like the COMTB member groups. The counter-examples that hold up against Castle Rock are Idaho Springs and Black Hawk — small towns that are their own primary land managers and still chose the partnership route.
+      <p><strong>Reading the mileage column honestly.</strong> I made every attempt to account for trail mileage accurately. Many towns report their trail miles as a single number that includes paved paths (similar to sidewalks) as well as dirt singletrack. I have tried to include only dirt singletrack that is open to mountain bikes.</p>
+      <p>Several Jefferson County entries (Littleton, Morrison, Evergreen) reference trails in <em>Jeffco Open Space</em> parks near those towns — built with COMBA — rather than municipally owned trails. That distinction actually strengthens the case: the region's dominant land manager treats nonprofit partnership as standard practice. Note also that Highlands Ranch is marked <strong>No</strong> — its trails are managed by the HRCA, a homeowners association organized as a nonprofit, not a mountain-bike trail-advocacy organization like the COMTB member groups. The counter-examples that hold up against Castle Rock are Idaho Springs and Black Hawk — small towns that are their own primary land managers and still chose the partnership route.</p>
     </div>
 
     <!-- Every number and town list in this block is filled in from DATA and the constants by
