@@ -8,13 +8,14 @@ A single-file, no-dependency HTML tool that compares Front Range Colorado towns 
 
 ## ⚠️ This data will go stale — treat it as a snapshot, not a source of truth
 
-This is the most important thing in this README. The original survey was compiled from web searches and public agency pages on **July 7, 2026**, with a sourcing pass adding primary-source links for every row on **August 2, 2026**. Nearly every field in it is the kind of fact that changes:
+This is the most important thing in this README. The original survey was compiled from web searches and public agency pages on **July 7, 2026**, with a sourcing pass adding primary-source links for every row on **August 2, 2026**. A review on **October 28, 2026** added the population and per-capita columns, refreshed the Conifer and Centennial rows, and replaced a dead Black Hawk link. Nearly every field in it is the kind of fact that changes:
 
 - **Trail mileage changes constantly.** Jeffco Open Space, Colorado Springs Parks, and city departments build new trail, close trail for restoration, and reroute existing trail every season. Treat mileage figures as estimates, not counts — see [Data & Confidence](#data--confidence) below.
 - **Partnership status can change.** A town that says "no" to a nonprofit today could sign an MOU next year — and vice versa, a partnership could lapse. This tool is exactly the kind of resource that gets stale-and-wrong quietly, which is worse than being visibly outdated.
 - **Org rosters shift.** COMTB's member list, COMBA's active project list, and even the mailing addresses on Jeffco trailheads (see the Littleton/Deer Creek Canyon note in the tool) can all move.
 - **New towns should get added.** This survey covers 23 municipalities across 8 counties. It is not exhaustive — it's a working sample built to make an argument, not a census.
-- **In-progress projects need the most frequent recheck.** Conifer High School's campus trail system (added August 2026) is actively fundraising for a second phase as of this writing — check whether Phase 2 has closed before citing the 3-mile figure in anything formal.
+- **In-progress projects need the most frequent recheck.** Conifer High School's campus trail system (added August 2026) was fundraising for a second phase, with a Jefferson County Trails Partnership Grant match if the goal was reached by Sept. 1, 2026. That deadline has passed and the outcome is unconfirmed (the GoFundMe's last visible update was dated 8/20 and said the campaign was about $2,750 short) — confirm with COMBA before citing Phase 2 or a 6-mile total.
+- **Links break.** The City of Black Hawk reorganized its website in 2026 and the Maryland Mountain page this tool used to link now returns a 404, so that row points to Boulder Mountainbike Alliance's May 2021 opening report until the city's new page is found. A quick link check once or twice a year catches this; several city sites (Castle Rock, Centennial, Englewood, Arvada, Commerce City, Idaho Springs, Highlands Ranch) answer automated checkers with a 403 even though they load fine in a browser, so test those by clicking them.
 
 **Recommended cadence:** re-verify the partnership-status column at least once a year, and before any formal presentation (Town Council, grant application, etc.) re-check the specific towns you're citing directly. Mileage figures are lower-priority to refresh unless you're citing an exact number out loud — though it's worth spot-checking any row whose source link is more than a year old.
 
@@ -23,10 +24,11 @@ This is the most important thing in this README. The original survey was compile
 ## What's in the tool
 
 - **Sortable/filterable data table** — 23 towns, 8 counties, click any column header to sort, filter chips for partnership status and county, live search, and a Compact/Full detail toggle for scanning quickly on a small screen.
+- **Population and miles-per-10,000-residents columns** — each town's population and its singletrack mileage divided by it, sortable like the rest. See [Population and the per-capita column](#population-and-the-per-capita-column) for what the number can and can't say.
 - **Per-row source citations** — most rows carry a direct link to the town's own parks/trails page or the news article the entry is based on, shown as a small "Source ↗" link under the town's note. Rows without one just don't show the link.
 - **Three color themes** (Blue Hour / Alpenglow / Meridian), consistent with the rest of the PMR tool suite.
 - **Mobile-first table** — below 680px the table becomes stacked cards with a colored left edge (green = partner, red = no partner) instead of a horizontally-scrolling grid.
-- **Write-up section** making the "why partner" case: grant eligibility, volunteer labor, trail design/sustainability, and political constituency — anchored with real numbers from COMBA, Medicine Wheel, Boulder Mountainbike Alliance, CAMBA (Wisconsin), and Northwest Arkansas/Bentonville, plus a pointer to the [Trail Advocacy Atlas](https://www.postmillenniumrenaissance.com/trail-advocacy-atlas/) for the national picture (370+ nonprofit trail organizations).
+- **Write-up section** making the "why partner" case: grant eligibility, volunteer labor, trail design/sustainability, and political constituency — anchored with real numbers from COMBA, Medicine Wheel, Boulder Mountainbike Alliance, CAMBA (Wisconsin), and Northwest Arkansas/Bentonville, plus a pointer to the [Trail Advocacy Atlas](https://www.postmillenniumrenaissance.com/trail-advocacy-atlas/) for the national picture (440+ nonprofit trail organizations catalogued).
 - **COMTB callout** — links to the Colorado Mountain Bike Coalition and its member directory, framing local partnerships as access to a statewide network, not just a local volunteer crew.
 
 ---
@@ -45,7 +47,29 @@ Every row carries a `conf` value (1–3) rendered as a Low/Medium/High badge:
 
 **Highlands Ranch is marked "No."** HRCA (Highlands Ranch Community Association) manages Backcountry Wilderness Area trails, but HRCA is a homeowners association structured as a nonprofit — not a mountain-bike trail-advocacy organization like the COMTB member groups. This distinction is called out directly in the tool's write-up.
 
+**Don't confuse the City of Centennial with Centennial Cone Park.** The Centennial row is the City of Centennial in Arapahoe County (suburban south metro, mostly paved greenways). Centennial Cone Park is a different place entirely: a large Jeffco Open Space park whose trailheads are all Golden, CO 80403 addresses, in Jefferson County. Its mileage does not belong on the Centennial row. Jeffco's own page describes "a 12-mile trail loop" (a Jeffco hunting-safety map lists the loop at 12.1 mi and Singletracks at about 13 mi); a "16.2 trail miles" figure was not found on the Jeffco page or in any search result when this was checked in October 2026. If Centennial Cone is ever counted, it would belong with the Golden-area Jeffco parks in the Golden row, with that same Jeffco caveat.
+
 **Source links track roughly with confidence.** When a row's confidence was raised (e.g. Parker moved from Medium to High in August 2026), it's because a primary source — usually the town's own map or page — was found and linked at the same time. If you add a source for a row, it's worth reconsidering whether the confidence badge should move too.
+
+---
+
+## Population and the per-capita column
+
+**The formula:** singletrack miles ÷ population × 10,000, shown as "Mi. per 10k residents". The unit is a setting (`PER_CAPITA_UNIT` / `PER_CAPITA_LABEL` near the top of the logic), not typed into the page.
+
+**Where population comes from** (added October 28, 2026):
+- **Incorporated places (20 of 23 rows):** U.S. Census Bureau city and town population estimates, **Vintage 2025, July 1, 2025** — the `sub-est2025.csv` file in the Census "Cities and Towns Totals 2020–2025" release (published May 2026).
+- **Highlands Ranch and Evergreen:** unincorporated census-designated places, which the Census does not estimate annually, so they carry the **2020 Census count** (PL 94-171 redistricting file). The row sets `popYear:2020` and the table shows a small "2020" beside the number.
+- **Conifer:** blank. The Census no longer defines a Conifer place, and a ZIP-code or school-district population would be a different geography. The table shows "—" rather than a substitute.
+
+**What the ratio cannot say — read before quoting it:**
+- It divides by the town's own residents, so it ignores riders who drive in. Destination trail towns look better than they "feel" per resident, and bedroom suburbs the reverse.
+- It is only as good as the mileage column, which the page already calls the softest data in the tool.
+- **† rows** (Littleton, Golden, Morrison, Evergreen) count Jeffco Open Space parks near the town, not trails the town owns, so the ratio is overstated. The same four rows are the "recurring caveat" above.
+- **n/m rows** (Morrison, Idaho Springs, Black Hawk) are under `MIN_POP_FOR_RATIO` (2,500 residents, the Census Bureau's urban/rural line). A town of 120 hosting a regional trail system divides to roughly 800 miles per 10,000 residents, which says nothing. Set the constant to 0 to show every ratio anyway.
+- Estimates for fast-growing towns move quickly. A 2020 count would flatter Castle Rock and Parker (both grew 13–15% since); that is why the incorporated places use the newest vintage.
+
+**To refresh it:** download the newest `sub-est20XX.csv` from the Census Bureau's population-estimates datasets, find each town's row (state `08`, summary level `162`, name like `Castle Rock town`), copy the latest `POPESTIMATE` column into the row's `pop`, and update `POP_YEAR` to match. The Census API now asks for a key; the flat CSV does not. (The October 2026 numbers were pulled and cross-checked by script, not typed.)
 
 ---
 
@@ -54,12 +78,15 @@ Every row carries a `conf` value (1–3) rendered as a Low/Medium/High badge:
 You don't need to touch any HTML or CSS to update a town's numbers. Open `index.html` in any text editor and search for `const DATA = [` near the top of the `<script>` block — it looks like this, one object per town:
 
 ```js
-{ town:"Golden", county:"Jefferson", status:"yes", org:"COMBA", miles:48, conf:2, source:"https://www.cityofgolden.gov/community/parks_trails/index.php", note:"..." },
+{ town:"Golden", county:"Jefferson", status:"yes", org:"COMBA", miles:48, conf:2, pop:20390, nearby:true, source:"https://www.cityofgolden.gov/community/parks_trails/index.php", note:"..." },
 ```
 
 - `status` is `"yes"` or `"no"`
 - `miles` is a plain number
 - `conf` is `3` (High), `2` (Medium), or `1` (Low)
+- `pop` (optional) — residents of the town itself, a plain number with no commas. Leave it off if there is no Census place for the town; the page then shows "—". See [Population and the per-capita column](#population-and-the-per-capita-column) for which Census figure to use.
+- `popYear` (optional) — only set it when the row's `pop` is not the default `POP_YEAR` vintage (for example `2020` for an unincorporated place). It adds a small year tag next to the number.
+- `nearby` (optional) — `true` when the miles are in nearby Jeffco Open Space parks rather than trails the town owns. It adds a † to the per-capita figure and the town to the legend under the table.
 - `note` is the short line that appears under the town name — keep it to one or two sentences
 - `source` (optional) — a URL string. If present, a small "Source ↗" link appears under the note, in both the desktop table and the mobile card view. Leave it off if you don't have a good primary source yet.
 - `foothills` (optional, only meaningful on Douglas County rows) — `true` or `false`. This isn't displayed anywhere; it's used only to compute the "go it alone" thesis-strip stat, which distinguishes foothills terrain (Castle Rock, Highlands Ranch) from plains/paved-trail terrain (Parker). You only need to set this if you're adding a new Douglas County town.
@@ -91,22 +118,24 @@ If editing raw JavaScript isn't your thing, the fastest path is to paste the rel
 - CAMBA (Chequamegon Area Mountain Bike Association, WI) — [cambatrails.org](https://www.cambatrails.org)
 - Walton Family Foundation / University of Arkansas economic impact studies on Northwest Arkansas trails
 - Trailforks, COTREX, and individual city trail pages for mileage cross-checks
+- U.S. Census Bureau — [city and town population estimates, Vintage 2025](https://www2.census.gov/programs-surveys/popest/datasets/2020-2025/cities/totals/sub-est2025.csv) and the [2020 Census redistricting (PL 94-171) file for Colorado](https://www2.census.gov/programs-surveys/decennial/2020/data/01-Redistricting_File--PL_94-171/Colorado/co2020.pl.zip), used for the population column
+- Independent Sector — value of volunteer time (national figure for 2024: $34.79/hr; the 2025 figure, released April 2026, is $36.14 on preliminary wage data)
 
-**Town & county primary sources (linked per-row as of August 2026):**
+**Town & county primary sources (linked per-row as of August 2026, updated October 2026):**
 - Douglas County — [Castle Rock](https://www.crgov.com/1985/Open-Space-and-Trails), [Parker](https://www.parkerrec.com/301/PARKS-TRAILS), [Highlands Ranch / HRCA](https://hrcaonline.org/Recreation/Backcountry-Wilderness-Area/Trails)
 - Jefferson County — [Jeffco Open Space: Deer Creek Canyon](https://www.jeffco.us/1208/Deer-Creek-Canyon-Park), [Crown Hill Park](https://www.jeffco.us/1207/Crown-Hill-Park); [Golden](https://www.cityofgolden.gov/community/parks_trails/index.php), [Lakewood / Singletracks](https://www.singletracks.com/mtb-trails/new-bike-optimized-beginner-flow-trail-opens-at-bear-creek-lake-park-near-denver-co/), [Morrison](https://www.morrisonco.us/130/Parks-Trails), [Evergreen](https://www.evergreenrecreation.com/trails), [Arvada](https://www.arvadaco.gov/508/Parks-Trails-and-Open-Space), [Conifer / CHS Today](https://chstoday.net/5669/news/new-proposed-trail-system-on-campus/)
 - El Paso County — [Colorado Springs](https://coloradosprings.gov/parks-trails-open-space), [Monument](https://townofmonument.org/277/Parks-and-Open-Space-Department)
 - Adams County — [Thornton](https://www.thorntonco.gov/parks-recreation/parks-planning), [Brighton](https://www.brightonco.gov/254/Parks-Recreation), [Commerce City](https://www.c3gov.com/Government/Facilities/Sand-Creek-Regional-Greenway-Commerce-City-Wetlands-Park), [Westminster](https://www.westminsterco.gov/381/Open-Space-Trails)
-- Arapahoe County — [Aurora](https://www.auroragov.org/things_to_do/parks__open_space___trails), [Centennial](https://www.centennialco.gov/Government/Departments/Parks-Trails-Open-Spaces), [Englewood](https://www.englewoodco.gov/parks-recreation-library-golf/play-englewood-recreation/parks)
+- Arapahoe County — [Aurora](https://www.auroragov.org/things_to_do/parks__open_space___trails), [Centennial](https://www.centennialco.gov/Government/Departments/Parks-Trails-Open-Spaces) (plus [Arapahoe County Open Spaces: Dove Valley Regional Park](https://www.arapahoeco.gov/business_detail_T15_R81.php), linked inside the Centennial note; bike-park length from [MTB Project](https://www.mtbproject.com/trail/7071870/dove-valley-bike-park), a user-submitted listing), [Englewood](https://www.englewoodco.gov/parks-recreation-library-golf/play-englewood-recreation/parks)
 - Boulder County — [Boulder OSMP](https://bouldercolorado.gov/government/departments/open-space-mountain-parks)
 - Clear Creek County — [Idaho Springs / Virginia Canyon Mountain Park](https://www.idahospringsco.com/home-page/page/virginia-canyon-mountain-park-vcmp)
-- Gilpin County — [Black Hawk / Maryland Mountain](https://www.cityofblackhawk.org/things-do-black-hawk/page/maryland-mountain-quartz-valley-open-space-park-hiking-biking)
+- Gilpin County — [Black Hawk / Maryland Mountain, via Boulder Mountainbike Alliance's May 2021 opening report](https://www.bouldermountainbike.org/maryland-mountain-grand-opening/). The City of Black Hawk's own page (`cityofblackhawk.org/things-do-black-hawk/page/maryland-mountain-quartz-valley-open-space-park-hiking-biking`) returned a 404 in October 2026 and should be re-linked once the city's new address is found.
 
 ---
 
 ## Roadmap / ideas not yet built
 
-- Per-capita singletrack mileage (needs population data added per town)
+- Population growth next to the per-capita column. The Vintage 2025 Census file already carries the 2020 base and the 2025 estimate, so "population change since 2020" is a one-field addition per town and shows which towns' per-capita figures are falling fastest
 - 5-year trail-mileage growth rate (isolates *capacity to expand*, which is the sharper version of the Castle Rock argument)
 - Grant dollars secured via nonprofit partner, where publicly documented
 - Annual volunteer trail-work hours by town/org
@@ -125,4 +154,4 @@ If you're pasting this file into a new Claude conversation to make a change, her
 
 Built for **Post Millennium Renaissance MTB** — [postmillenniumrenaissance.com](https://www.postmillenniumrenaissance.com) — as part of ongoing trail advocacy work in Castle Rock, Colorado. No build tooling, no dependencies, single HTML file, deploys directly to GitHub Pages.
 
-*Last substantive data update: August 2026 (23 towns, 8 counties — added Conifer, refreshed Idaho Springs mileage, added source citations to every row). If you're reading this more than a few months later, assume at least a few mileage figures and possibly a partnership status or two have changed — reverify before citing anything in a formal setting.*
+*Last substantive data update: October 28, 2026 (23 towns, 8 counties — added population and per-capita columns, refreshed the Conifer and Centennial notes, replaced the dead Black Hawk link, updated the Trail Advocacy Atlas count to 440+ and the volunteer-hour value to ~$35). Previous: August 2026 (added Conifer, refreshed Idaho Springs mileage, added source citations to every row). If you're reading this more than a few months later, assume at least a few mileage figures and possibly a partnership status or two have changed — reverify before citing anything in a formal setting.*

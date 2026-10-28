@@ -325,7 +325,7 @@
 
   /* ---------- Table ---------- */
   .table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); }
-  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 760px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 940px; }
   thead th {
     background: var(--bg-panel-alt);
     text-align: left;
@@ -351,6 +351,7 @@
   tbody tr:hover { background: var(--bg-panel-alt); }
   .town-name { font-weight: 600; font-size: 0.96rem; }
   .town-note { font-size: 0.76rem; color: var(--ink-soft); margin-top: 3px; line-height: 1.4; }
+  .town-note a { color: var(--accent); text-underline-offset: 2px; }  /* inline links inside a note (e.g. Centennial → Dove Valley) */
   .town-source {
     display: inline-block;
     font-family: var(--font-mono);
@@ -388,6 +389,15 @@
     max-width: 120px;
     opacity: 0.75;
   }
+  /* Population + per-capita cells. Same mono face as the mileage so the three numeric
+     columns read as one block. */
+  .pop-val { font-family: var(--font-mono); font-size: 0.88rem; }
+  .pop-yr { font-family: var(--font-mono); font-size: 0.64rem; color: var(--ink-soft); margin-left: 4px; white-space: nowrap; }
+  .na-val { font-family: var(--font-mono); font-size: 0.88rem; color: var(--ink-soft); cursor: help; }
+  /* dagger = mileage is in nearby Jeffco Open Space parks, so the ratio is overstated.
+     Full-size (not <sup>) so it stays legible next to the number; hover shows a tooltip, and the
+     legend below the table explains it for touch screens. */
+  .dag { color: var(--accent); font-weight: 700; font-size: 0.95rem; margin-left: 3px; cursor: help; }
   .conf {
     font-family: var(--font-mono);
     font-size: 0.68rem;
@@ -410,9 +420,10 @@
   body.compact tbody td { padding: 8px 14px; }
   body.compact .miles-bar { display: none; }
   body.compact .town-name { font-size: 0.9rem; }
-  body.compact table { min-width: 560px; }
-  /* org column collapses in compact to keep the table scannable */
-  body.compact .col-org { display: none; }
+  body.compact table { min-width: 620px; }
+  /* org + population columns collapse in compact to keep the table scannable; the
+     per-capita column stays because it is the headline comparison */
+  body.compact .col-org, body.compact .col-pop { display: none; }
 
   .caveat {
     margin-top: 16px;
@@ -676,7 +687,25 @@
     tbody td { padding: 6pt 5pt; border-bottom: 0.75pt solid var(--line); }
     thead { display: table-header-group; }   /* repeats the header on every page */
     tr, .case, .thesis-cell, .coalition-note, .caveat, .pullquote, .principles li { break-inside: avoid; }
-    th:nth-child(1), td:nth-child(1) { width: 38%; }
+    /* Fixed layout so these widths are actually honored. With auto layout, adding the two population
+       columns squeezed the town column to ~1.6in, every note wrapped tall, and the printout grew from
+       8 to 10 pages. Widths are % of the page and sum to 100 with every column showing; compact view
+       hides two columns and the leftover is spread across the rest. Widths read from the header row only. */
+    table, body.compact table { table-layout: fixed; }
+    th[data-sort="town"]      { width: 26.5%; }
+    th[data-sort="county"]    { width: 9%; }
+    th[data-sort="status"]    { width: 9.5%; }
+    th[data-sort="org"]       { width: 11.5%; }
+    th[data-sort="miles"]     { width: 12.5%; }
+    th[data-sort="pop"]       { width: 10.5%; }
+    th[data-sort="perCapita"] { width: 10%; }
+    th[data-sort="conf"]      { width: 10.5%; }
+    /* The mono header words (SINGLETRACK, POPULATION, CONFIDENCE) are ~0.75in each at 7.5pt and cannot
+       wrap, so the narrow columns above are only wide enough with tighter spacing and padding. Do not
+       widen the town column without re-checking that no header overflows its cell. */
+    thead th { letter-spacing: 0.02em; padding: 6pt 4pt; overflow-wrap: anywhere; }
+    tbody td { padding-left: 4pt; padding-right: 4pt; }
+    .pop-yr { display: block; margin: 0; }   /* "2020" tag drops under the number instead of widening the column */
     .town-name { font-size: 9.5pt; }
     .town-note { font-size: 7.5pt; color: var(--ink-soft); }
     tbody tr, tbody tr:hover { background: none; }
@@ -719,7 +748,7 @@
 
   <!-- ============ TOP BAR ============ -->
   <div class="topbar">
-    <a class="backlink" href="https://www.postmillenniumrenaissance.com">
+    <a class="backlink" href="https://www.postmillenniumrenaissance.com" target="_top">
       <span class="arw">←</span> Post Millennium Renaissance
     </a>
     <div class="topbar-actions">
@@ -819,6 +848,9 @@
             <th data-sort="status" data-type="status">Partner? <span class="sortcaret">↕</span></th>
             <th data-sort="org" data-type="str" class="col-org">Nonprofit partner <span class="sortcaret">↕</span></th>
             <th data-sort="miles" data-type="num">Singletrack mi. <span class="sortcaret">↕</span></th>
+            <th data-sort="pop" data-type="num" class="col-pop">Population <span class="sortcaret">↕</span></th>
+            <!-- unit label ("10k") is filled in from PER_CAPITA_LABEL by renderPerCapitaText() -->
+            <th data-sort="perCapita" data-type="num">Mi. per <span class="percap-unit">10k</span> residents <span class="sortcaret">↕</span></th>
             <th data-sort="conf" data-type="conf">Confidence <span class="sortcaret">↕</span></th>
           </tr>
         </thead>
@@ -829,6 +861,12 @@
 
     <div class="caveat">
       <strong>Reading the mileage column honestly.</strong> Several Jefferson County entries (Littleton, Morrison, Evergreen) reference trails in <em>Jeffco Open Space</em> parks near those towns — built with COMBA — rather than municipally owned trails. That distinction actually strengthens the case: the region's dominant land manager treats nonprofit partnership as standard practice. Note also that Highlands Ranch is marked <strong>No</strong> — its trails are managed by the HRCA, a homeowners association organized as a nonprofit, not a mountain-bike trail-advocacy organization like the COMTB member groups. The counter-examples that hold up against Castle Rock are Idaho Springs and Black Hawk — small towns that are their own primary land managers and still chose the partnership route.
+    </div>
+
+    <!-- Every number and town list in this block is filled in from DATA and the constants by
+         renderPerCapitaText(), so changing a threshold or a row can't leave the text stale. -->
+    <div class="caveat">
+      <strong>Reading the per-capita column.</strong> Miles per <span class="percap-unit">10k</span> residents divides the mileage by the population of the town itself, so it cannot see riders who drive in from elsewhere, and it is only as reliable as the mileage column beside it. <strong>†</strong> marks towns whose mileage sits in nearby Jeffco Open Space parks rather than trails the town owns (<span id="nearby-towns">—</span>), which overstates their ratio. <strong>n/m</strong> (not meaningful) replaces the ratio under <span id="min-pop">2,500</span> residents (<span id="nm-towns">—</span>): those towns host regional trail systems for populations too small to divide by. Population is the Census Bureau's July 1, <span id="pop-year-default">2025</span> estimate; Highlands Ranch and Evergreen are unincorporated, have no annual estimate, and carry the 2020 Census count instead. Conifer is blank because the Census does not define a Conifer place.
     </div>
   </section>
 
@@ -852,7 +890,7 @@
         </li>
         <li>
           <h4>Volunteer labor at a scale no crew can match</h4>
-          <p>COMBA volunteers contribute more than 7,000 hours of trail work every year. Boulder Mountainbike Alliance has logged over 24,000 volunteer hours across 150+ project days. For grant-match purposes that labor is valued at roughly $33 per hour — real, bankable capacity that expands what the department can deliver without expanding its payroll.</p>
+          <p>COMBA volunteers contribute more than 7,000 hours of trail work every year. Boulder Mountainbike Alliance has logged over 24,000 volunteer hours across 150+ project days. For grant-match purposes that labor is valued at roughly $35 per hour (Independent Sector's 2024 national figure is $34.79) — real, bankable capacity that expands what the department can deliver without expanding its payroll.</p>
         </li>
         <li>
           <h4>Specialized design expertise and sustainability</h4>
@@ -869,7 +907,7 @@
       <div class="pullquote">"With today's limited budgets, land management agencies are finding it harder and harder to build new trails. The nonprofit steps in to help build trails that benefit all users." — the model Medicine Wheel Trail Advocates has run in the Pikes Peak region since 1991.</div>
 
       <h3>The national pattern</h3>
-      <p>This isn't a Colorado quirk. The same public-plus-nonprofit structure appears wherever trail networks have grown into national destinations — and it isn't a handful of outliers making it work. Over 370 nonprofit trail organizations operate across the U.S. (see the <a href="https://www.postmillenniumrenaissance.com/trail-advocacy-atlas/" target="_blank" rel="noopener">Trail Advocacy Atlas</a>), and the scale that unlocks is hard to argue with.</p>
+      <p>This isn't a Colorado quirk. The same public-plus-nonprofit structure appears wherever trail networks have grown into national destinations — and it isn't a handful of outliers making it work. More than 440 nonprofit trail organizations are catalogued across the U.S. in the <a href="https://www.postmillenniumrenaissance.com/trail-advocacy-atlas/" target="_blank" rel="noopener">Trail Advocacy Atlas</a>, and the scale that unlocks is hard to argue with.</p>
 
       <div class="cases" id="cases"><!-- injected from CASE_STUDIES by renderCases() --></div>
 
@@ -883,7 +921,7 @@
     </div>
 
     <p class="disclaimer">
-      <strong>Sources &amp; confidence.</strong> Partnership status is drawn from the organizations' own project pages and public agency records (Colorado Mountain Bike Coalition, COMBA, Medicine Wheel Trail Advocates, Boulder Mountainbike Alliance, Jefferson County Open Space) and is high-confidence. Singletrack mileage figures are estimates compiled from Trailforks, agency trail pages, and COTREX, and vary by source depending on how paved and soft-surface segments are counted — verify against current data before formal use. Castle Rock's 40-mile figure is per the project author. National figures: CAMBA (cambatrails.org, U.S. Forest Service), NWA economic impact (University of Arkansas 2023 study; Walton Family Foundation). Compiled for Post Millennium Renaissance MTB as a brainstorming and advocacy resource — data may have changed since compilation.
+      <strong>Sources &amp; confidence.</strong> Partnership status is drawn from the organizations' own project pages and public agency records (Colorado Mountain Bike Coalition, COMBA, Medicine Wheel Trail Advocates, Boulder Mountainbike Alliance, Jefferson County Open Space) and is high-confidence. Singletrack mileage figures are estimates compiled from Trailforks, agency trail pages, and COTREX, and vary by source depending on how paved and soft-surface segments are counted — verify against current data before formal use. Castle Rock's 40-mile figure is per the project author. Population: U.S. Census Bureau city and town estimates (Vintage 2025, July 1, 2025) and the 2020 Census (PL 94-171) for unincorporated Highlands Ranch and Evergreen. Volunteer-hour value: Independent Sector, 2024. National figures: CAMBA (cambatrails.org, U.S. Forest Service), NWA economic impact (University of Arkansas 2023 study; Walton Family Foundation). Compiled for Post Millennium Renaissance MTB as a brainstorming and advocacy resource — data may have changed since compilation.
     </p>
   </section>
 
@@ -894,7 +932,7 @@
       <div class="foot-meta">Trail advocacy · Castle Rock, Colorado</div>
     </div>
     <div class="foot-meta">
-      <a href="https://www.postmillenniumrenaissance.com">postmillenniumrenaissance.com</a><br>
+      <a href="https://www.postmillenniumrenaissance.com" target="_top">postmillenniumrenaissance.com</a><br>
       No solutions, only tradeoffs.
     </div>
   </footer>
@@ -906,31 +944,40 @@
    DATA
    status: 'yes' | 'no'  (partial folded into note where relevant)
    conf: 3 = high, 2 = med, 1 = low  (for the partnership call)
+   pop: residents of the town itself. Census Bureau Vintage 2025 estimate (July 1, 2025)
+        for incorporated places. Highlands Ranch and Evergreen are unincorporated and have
+        no annual estimate, so they carry the 2020 Census count and set popYear:2020.
+        Leave pop OFF a row when no Census place exists (Conifer): the page shows "—"
+        instead of a guess.
+   popYear: set only when a row's pop is NOT the default POP_YEAR vintage (see below).
+   nearby: true when the miles are in nearby Jeffco Open Space parks rather than trails
+        the town owns. Puts a † on the per-capita figure, which would otherwise flatter
+        the town.
    ============================================================ */
 const DATA = [
-  { town:"Castle Rock", county:"Douglas", status:"no", org:"None — in-house + Timberline Trail Craft (for-profit)", miles:40, conf:3, foothills:true, source:"https://www.crgov.com/1985/Open-Space-and-Trails", note:"Only foothills municipality in this survey that declines nonprofit partnership." },
-  { town:"Parker", county:"Douglas", status:"no", org:"None", miles:2, conf:3, foothills:false, source:"https://www.parkerrec.com/301/PARKS-TRAILS", note:"Parker's own Parks &amp; Trails map (41 total mi, mostly paved) shows very little soft surface — supports the ~2 mi natural-surface estimate." },
-  { town:"Highlands Ranch", county:"Douglas", status:"no", org:"None — HRCA (a nonprofit HOA) manages trails in-house", miles:26, conf:3, foothills:true, source:"https://hrcaonline.org/Recreation/Backcountry-Wilderness-Area/Trails", note:"HRCA is a homeowners association structured as a nonprofit, not a mountain-bike trail advocacy organization. 8,200-acre Backcountry Wilderness Area." },
-  { town:"Littleton", county:"Jefferson", status:"yes", org:"COMBA", miles:14, conf:3, source:"https://www.jeffco.us/1208/Deer-Creek-Canyon-Park", note:"Deer Creek Canyon Park is Jeffco Open Space (Littleton mailing address, outside city limits). Some trails hiker/equestrian-only." },
-  { town:"Golden", county:"Jefferson", status:"yes", org:"COMBA", miles:48, conf:2, source:"https://www.cityofgolden.gov/community/parks_trails/index.php", note:"COMBA builds 'singletrack sidewalks' in town; Jeffco/COMBA build & maintain the ringing parks — Apex (~10), North Table (~17), South Table (~16), Mt. Galbraith (~5). Most acreage is Jeffco Open Space, not city-owned." },
-  { town:"Lakewood", county:"Jefferson", status:"yes", org:"COMBA", miles:15, conf:3, source:"https://www.singletracks.com/mtb-trails/new-bike-optimized-beginner-flow-trail-opens-at-bear-creek-lake-park-near-denver-co/", note:"Green Mountain / Wm. F. Hayden Park + Bear Creek Lake Park. COMBA joined the City's Bear Creek Lake Park master-plan process in 2024 and delivered Prairie Plunge (opened Nov. 2025) — the park's first purpose-built, bike-optimized flow trail." },
-  { town:"Morrison", county:"Jefferson", status:"yes", org:"COMBA", miles:19, conf:2, source:"https://www.morrisonco.us/130/Parks-Trails", note:"Mt. Falcon + Matthews/Winters — Jeffco Open Space parks near the town." },
-  { town:"Evergreen", county:"Jefferson", status:"yes", org:"COMBA", miles:28, conf:2, source:"https://www.evergreenrecreation.com/trails", note:"Alderfer/Three Sisters, Elk Meadow, Flying J. Unincorporated." },
-  { town:"Arvada", county:"Jefferson", status:"no", org:"None within city limits", miles:3, conf:2, source:"https://www.arvadaco.gov/508/Parks-Trails-and-Open-Space", note:"White Ranch (20+ mi, Jeffco/COMBA-adjacent) is nearby but outside the boundary." },
-  { town:"Wheat Ridge", county:"Jefferson", status:"no", org:"None", miles:1, conf:2, source:"https://www.jeffco.us/1207/Crown-Hill-Park", note:"Crown Hill trails are paved." },
-  { town:"Colorado Springs", county:"El Paso", status:"yes", org:"Medicine Wheel Trail Advocates", miles:100, conf:3, source:"https://coloradosprings.gov/parks-trails-open-space", note:"33 volunteer dig dates in 2024; 7 on city Parks property. Palmer, Ute Valley, Red Rock Canyon, Stratton." },
-  { town:"Monument", county:"El Paso", status:"yes", org:"Medicine Wheel Trail Advocates", miles:8, conf:3, source:"https://townofmonument.org/277/Parks-and-Open-Space-Department", note:"Medicine Wheel Trail Advocates is leading the FL7-to-Monument Trail connector." },
-  { town:"Thornton", county:"Adams", status:"no", org:"None", miles:2, conf:2, source:"https://www.thorntonco.gov/parks-recreation/parks-planning", note:"Extensive trail mileage city-wide but overwhelmingly paved greenway." },
-  { town:"Brighton", county:"Adams", status:"no", org:"None", miles:1, conf:1, source:"https://www.brightonco.gov/254/Parks-Recreation", note:"Plains terrain; paved-dominant. Not deeply verified." },
-  { town:"Commerce City", county:"Adams", status:"no", org:"None", miles:2, conf:2, source:"https://www.c3gov.com/Government/Facilities/Sand-Creek-Regional-Greenway-Commerce-City-Wetlands-Park", note:"Short unpaved spurs off the Sand Creek Greenway." },
-  { town:"Westminster", county:"Adams", status:"no", org:"None", miles:2, conf:1, source:"https://www.westminsterco.gov/381/Open-Space-Trails", note:"Spans Adams/Jefferson. Paved-dominant." },
-  { town:"Aurora", county:"Arapahoe", status:"no", org:"None", miles:3, conf:2, source:"https://www.auroragov.org/things_to_do/parks__open_space___trails", note:"Spans Arapahoe/Adams. Short spurs like Creekside off Sand Creek Trail." },
-  { town:"Centennial", county:"Arapahoe", status:"no", org:"None", miles:1, conf:2, source:"https://www.centennialco.gov/Government/Departments/Parks-Trails-Open-Spaces", note:"Greenway-dominant suburban network." },
-  { town:"Englewood", county:"Arapahoe", status:"no", org:"None", miles:1, conf:2, source:"https://www.englewoodco.gov/parks-recreation-library-golf/play-englewood-recreation/parks", note:"Big Dry Creek / Mary Carter Greenway — paved." },
-  { town:"Boulder", county:"Boulder", status:"yes", org:"Boulder Mountainbike Alliance", miles:25, conf:3, source:"https://bouldercolorado.gov/government/departments/open-space-mountain-parks", note:"BMA designs/builds/maintains with the city, county, and USFS; 20+ mi recently improved." },
-  { town:"Idaho Springs", county:"Clear Creek", status:"yes", org:"COMBA", miles:16, conf:3, source:"https://www.idahospringsco.com/home-page/page/virginia-canyon-mountain-park-vcmp", note:"Virginia Canyon Mountain Park (Trek Trails); COMBA served as city consultants since 2016. Mileage updated from the town's 2026 reopening announcement, which put the system at 16+ mi after recent trail extensions." },
-  { town:"Black Hawk", county:"Gilpin", status:"yes", org:"COMBA", miles:10, conf:3, source:"https://www.cityofblackhawk.org/things-do-black-hawk/page/maryland-mountain-quartz-valley-open-space-park-hiking-biking", note:"Maryland Mountain — COMBA building bike-only directional trail." },
-  { town:"Conifer", county:"Jefferson", status:"yes", org:"COMBA", miles:3, conf:3, source:"https://chstoday.net/5669/news/new-proposed-trail-system-on-campus/", note:"COMBA partnered with Conifer High School to build a public trail system on campus; the initial section is complete and open to the public outside school hours, with a potential future connection to the Flying J network. As of July 2026, a Phase 2 campaign is raising funds for 3 more miles (6-mi. total system), with a Jefferson County Trails Partnership Grant matching donations if the goal is met by Sept. 1, 2026 — see COMBA's Facebook and GoFundMe for the current campaign." }
+  { town:"Castle Rock", county:"Douglas", status:"no", org:"None — in-house + Timberline Trail Craft (for-profit)", miles:40, conf:3, pop:83815, foothills:true, source:"https://www.crgov.com/1985/Open-Space-and-Trails", note:"Only foothills municipality in this survey that declines nonprofit partnership." },
+  { town:"Parker", county:"Douglas", status:"no", org:"None", miles:2, conf:3, pop:65985, foothills:false, source:"https://www.parkerrec.com/301/PARKS-TRAILS", note:"Parker's own Parks &amp; Trails map (41 total mi, mostly paved) shows very little soft surface — supports the ~2 mi natural-surface estimate." },
+  { town:"Highlands Ranch", county:"Douglas", status:"no", org:"None — HRCA (a nonprofit HOA) manages trails in-house", miles:26, conf:3, pop:103444, popYear:2020, foothills:true, source:"https://hrcaonline.org/Recreation/Backcountry-Wilderness-Area/Trails", note:"HRCA is a homeowners association structured as a nonprofit, not a mountain-bike trail advocacy organization. 8,200-acre Backcountry Wilderness Area." },
+  { town:"Littleton", county:"Jefferson", status:"yes", org:"COMBA", miles:14, conf:3, pop:46246, nearby:true, source:"https://www.jeffco.us/1208/Deer-Creek-Canyon-Park", note:"Deer Creek Canyon Park is Jeffco Open Space (Littleton mailing address, outside city limits). Some trails hiker/equestrian-only." },
+  { town:"Golden", county:"Jefferson", status:"yes", org:"COMBA", miles:48, conf:2, pop:20390, nearby:true, source:"https://www.cityofgolden.gov/community/parks_trails/index.php", note:"COMBA builds 'singletrack sidewalks' in town; Jeffco/COMBA build & maintain the ringing parks — Apex (~10), North Table (~17), South Table (~16), Mt. Galbraith (~5). Most acreage is Jeffco Open Space, not city-owned." },
+  { town:"Lakewood", county:"Jefferson", status:"yes", org:"COMBA", miles:15, conf:3, pop:156927, source:"https://www.singletracks.com/mtb-trails/new-bike-optimized-beginner-flow-trail-opens-at-bear-creek-lake-park-near-denver-co/", note:"Green Mountain / Wm. F. Hayden Park + Bear Creek Lake Park. COMBA joined the City's Bear Creek Lake Park master-plan process in 2024 and delivered Prairie Plunge (opened Nov. 2025) — the park's first purpose-built, bike-optimized flow trail." },
+  { town:"Morrison", county:"Jefferson", status:"yes", org:"COMBA", miles:19, conf:2, pop:364, nearby:true, source:"https://www.morrisonco.us/130/Parks-Trails", note:"Mt. Falcon + Matthews/Winters — Jeffco Open Space parks near the town." },
+  { town:"Evergreen", county:"Jefferson", status:"yes", org:"COMBA", miles:28, conf:2, pop:9307, popYear:2020, nearby:true, source:"https://www.evergreenrecreation.com/trails", note:"Alderfer/Three Sisters, Elk Meadow, Flying J. Unincorporated." },
+  { town:"Arvada", county:"Jefferson", status:"no", org:"None within city limits", miles:3, conf:2, pop:122901, source:"https://www.arvadaco.gov/508/Parks-Trails-and-Open-Space", note:"White Ranch (20+ mi, Jeffco/COMBA-adjacent) is nearby but outside the boundary." },
+  { town:"Wheat Ridge", county:"Jefferson", status:"no", org:"None", miles:1, conf:2, pop:32081, source:"https://www.jeffco.us/1207/Crown-Hill-Park", note:"Crown Hill trails are paved." },
+  { town:"Colorado Springs", county:"El Paso", status:"yes", org:"Medicine Wheel Trail Advocates", miles:100, conf:3, pop:494743, source:"https://coloradosprings.gov/parks-trails-open-space", note:"33 volunteer dig dates in 2024; 7 on city Parks property. Palmer, Ute Valley, Red Rock Canyon, Stratton." },
+  { town:"Monument", county:"El Paso", status:"yes", org:"Medicine Wheel Trail Advocates", miles:8, conf:3, pop:13813, source:"https://townofmonument.org/277/Parks-and-Open-Space-Department", note:"Medicine Wheel Trail Advocates is leading the FL7-to-Monument Trail connector." },
+  { town:"Thornton", county:"Adams", status:"no", org:"None", miles:2, conf:2, pop:147766, source:"https://www.thorntonco.gov/parks-recreation/parks-planning", note:"Extensive trail mileage city-wide but overwhelmingly paved greenway." },
+  { town:"Brighton", county:"Adams", status:"no", org:"None", miles:1, conf:1, pop:45395, source:"https://www.brightonco.gov/254/Parks-Recreation", note:"Plains terrain; paved-dominant. Not deeply verified." },
+  { town:"Commerce City", county:"Adams", status:"no", org:"None", miles:2, conf:2, pop:72345, source:"https://www.c3gov.com/Government/Facilities/Sand-Creek-Regional-Greenway-Commerce-City-Wetlands-Park", note:"Short unpaved spurs off the Sand Creek Greenway." },
+  { town:"Westminster", county:"Adams", status:"no", org:"None", miles:2, conf:1, pop:116182, source:"https://www.westminsterco.gov/381/Open-Space-Trails", note:"Spans Adams/Jefferson. Paved-dominant." },
+  { town:"Aurora", county:"Arapahoe", status:"no", org:"None", miles:3, conf:2, pop:410053, source:"https://www.auroragov.org/things_to_do/parks__open_space___trails", note:"Spans Arapahoe/Adams. Short spurs like Creekside off Sand Creek Trail." },
+  { town:"Centennial", county:"Arapahoe", status:"no", org:"None", miles:1, conf:2, pop:108658, source:"https://www.centennialco.gov/Government/Departments/Parks-Trails-Open-Spaces", note:"Greenway-dominant suburban network. Arapahoe County's <a href=\"https://www.arapahoeco.gov/business_detail_T15_R81.php\" target=\"_blank\" rel=\"noopener\">Dove Valley Regional Park</a> (Centennial address) added a bike park and pump track in Oct. 2024; the county page gives no trail mileage and MTB Project lists the bike park at ~0.3 mi, so the 1-mile estimate stands." },
+  { town:"Englewood", county:"Arapahoe", status:"no", org:"None", miles:1, conf:2, pop:35305, source:"https://www.englewoodco.gov/parks-recreation-library-golf/play-englewood-recreation/parks", note:"Big Dry Creek / Mary Carter Greenway — paved." },
+  { town:"Boulder", county:"Boulder", status:"yes", org:"Boulder Mountainbike Alliance", miles:25, conf:3, pop:105689, source:"https://bouldercolorado.gov/government/departments/open-space-mountain-parks", note:"BMA designs/builds/maintains with the city, county, and USFS; 20+ mi recently improved." },
+  { town:"Idaho Springs", county:"Clear Creek", status:"yes", org:"COMBA", miles:16, conf:3, pop:1842, source:"https://www.idahospringsco.com/home-page/page/virginia-canyon-mountain-park-vcmp", note:"Virginia Canyon Mountain Park (Trek Trails); COMBA served as city consultants since 2016. Mileage updated from the town's 2026 reopening announcement, which put the system at 16+ mi after recent trail extensions." },
+  { town:"Black Hawk", county:"Gilpin", status:"yes", org:"COMBA", miles:10, conf:3, pop:120, source:"https://www.bouldermountainbike.org/maryland-mountain-grand-opening/", note:"Maryland Mountain — COMBA and Boulder Mountainbike Alliance built it with the city; COMBA pushed for bike-only directional trails. Source is BMA's May 2021 opening report (~12 mi then); the City of Black Hawk's own page has moved and should be re-linked." },
+  { town:"Conifer", county:"Jefferson", status:"yes", org:"COMBA", miles:3, conf:3, source:"https://chstoday.net/5669/news/new-proposed-trail-system-on-campus/", note:"COMBA partnered with Conifer High School to build a public trail system on campus; the initial section is complete and open to the public outside school hours, with a potential future connection to the Flying J network. A Phase 2 campaign sought funds for 3 more miles (6-mi. total system), with a Jefferson County Trails Partnership Grant matching donations if the goal was met by Sept. 1, 2026. That deadline has passed and the outcome is unconfirmed as of Oct. 2026 — check COMBA's Facebook and the GoFundMe before citing Phase 2. Population left blank: the Census does not define a Conifer place." }
 ];
 
 /* ============================================================
@@ -987,6 +1034,20 @@ const THEMES = [
 
 const CONF_LABEL = { 3:"High", 2:"Medium", 1:"Low" };
 const CONF_CLASS = { 3:"high", 2:"med", 1:"low" };
+
+/* ---------- Per-capita settings ---------- */
+const POP_YEAR = 2025;          // vintage of the default pop figures: Census estimate for July 1 of this year.
+                                // A row with a different vintage sets popYear and shows it in small type.
+const PER_CAPITA_UNIT = 10000;  // the ratio is miles per this many residents. 10,000 keeps Castle Rock near
+                                // 4.8 instead of 0.48; change it and also PER_CAPITA_LABEL below.
+const PER_CAPITA_LABEL = "10k"; // how the unit reads in the header, card label and legend
+const MIN_POP_FOR_RATIO = 2500; // below this many residents the ratio prints "n/m": a town of 120 hosting a
+                                // regional trail system divides to ~800 mi per 10k, which says nothing.
+                                // 2,500 is the Census Bureau's own urban/rural line. Set to 0 to show every ratio.
+const NEARBY_TIP = "Mileage counts nearby Jeffco Open Space parks, not trails the town owns, so this ratio is overstated.";
+
+/* ================== END OF DATA — everything below is logic ================== */
+
 const maxMiles = Math.max(...DATA.map(d => d.miles));
 
 /* ---------- Render ---------- */
@@ -995,6 +1056,34 @@ function statusBadge(s){
   if(s==="yes") return '<span class="badge b-yes">Yes</span>';
   return '<span class="badge b-no">No</span>';
 }
+
+/* ---------- Per-capita helpers ----------
+   perCapita() returns miles per PER_CAPITA_UNIT residents, or null when there is no usable
+   denominator (no pop on the row, or under MIN_POP_FOR_RATIO). The sort treats null as
+   "no value" and always puts those rows last. */
+function perCapita(d){
+  if(!d.pop || d.pop < MIN_POP_FOR_RATIO) return null;
+  return d.miles / d.pop * PER_CAPITA_UNIT;
+}
+// Two decimals below 1 so Aurora (0.07) and Centennial (0.09) don't both read "0.1"
+function fmtRatio(v){ return v < 1 ? v.toFixed(2) : v.toFixed(1); }
+function popCell(d){
+  if(!d.pop) return '<span class="na-val" title="No Census place for this town">—</span>';
+  const yr = (d.popYear && d.popYear !== POP_YEAR)
+    ? `<span class="pop-yr" title="${d.popYear} Census count: unincorporated, so no annual estimate">${d.popYear}</span>` : '';
+  return `<span class="pop-val">${d.pop.toLocaleString('en-US')}</span>${yr}`;
+}
+function perCapitaCell(d){
+  const v = perCapita(d);
+  if(v === null){
+    return d.pop
+      ? `<span class="na-val" title="Not meaningful: under ${MIN_POP_FOR_RATIO.toLocaleString('en-US')} residents">n/m</span>`
+      : '<span class="na-val" title="No population figure for this town">—</span>';
+  }
+  const dag = d.nearby ? `<span class="dag" title="${NEARBY_TIP}" aria-label="overstated: mileage is in nearby Jeffco Open Space parks">†</span>` : '';
+  return `<span class="miles-val">${fmtRatio(v)}</span>${dag}`;
+}
+
 function render(rows){
   tbody.innerHTML = rows.map(d => `
     <tr data-town="${d.town.toLowerCase()}" data-org="${d.org.toLowerCase()}" data-status="${d.status}" data-county="${d.county}">
@@ -1011,6 +1100,8 @@ function render(rows){
         <!-- minimum 6% width so low-mileage towns still show a visible/tappable bar -->
         <div class="miles-bar" style="width:${Math.max(6,(d.miles/maxMiles)*100)}%"></div>
       </td>
+      <td class="col-pop" data-label="Population">${popCell(d)}</td>
+      <td data-label="Per ${PER_CAPITA_LABEL}">${perCapitaCell(d)}</td>
       <td data-label="Confidence"><span class="conf ${CONF_CLASS[d.conf]}">${CONF_LABEL[d.conf]}</span></td>
     </tr>`).join('');
 }
@@ -1069,11 +1160,22 @@ function renderThesisStats(){
   if(castleRock) document.getElementById('cr-miles').textContent = castleRock.miles;
 }
 
+/* ---------- Per-capita header unit + legend text (all derived from the constants and DATA) ---------- */
+function renderPerCapitaText(){
+  document.querySelectorAll('.percap-unit').forEach(el => { el.textContent = PER_CAPITA_LABEL; });
+  document.getElementById('min-pop').textContent = MIN_POP_FOR_RATIO.toLocaleString('en-US');
+  document.getElementById('pop-year-default').textContent = POP_YEAR;
+  const names = list => list.map(d => d.town).join(', ') || 'none';
+  document.getElementById('nearby-towns').textContent = names(DATA.filter(d => d.nearby));
+  document.getElementById('nm-towns').textContent = names(DATA.filter(d => d.pop && d.pop < MIN_POP_FOR_RATIO));
+}
+
 /* ---------- Build DATA-driven content before wiring up interactivity ---------- */
 renderThemeSwatches();
 renderCountyChips();
 renderCases();
 renderThesisStats();
+renderPerCapitaText();
 
 /* ---------- Filter + search state ---------- */
 let filterStatus = "all", filterCounty = "all", searchQuery = "";
@@ -1126,10 +1228,14 @@ function sortRows(rows){
   return rows.slice().sort((a,b)=>{
     let av, bv;
     if(sortKey==="miles"){ av=a.miles; bv=b.miles; }
+    else if(sortKey==="pop"){ av=a.pop; bv=b.pop; }
+    else if(sortKey==="perCapita"){ av=perCapita(a); bv=perCapita(b); }
     else if(sortKey==="conf"){ av=a.conf; bv=b.conf; }
     else if(sortKey==="status"){ av=statusRank[a.status]; bv=statusRank[b.status]; }
     // text columns (town / org / county): sortKey already matches the DATA field name directly
     else { av=a[sortKey].toLowerCase(); bv=b[sortKey].toLowerCase(); }
+    // rows with no value (blank population, or an "n/m" ratio) sink to the bottom whichever way the column sorts
+    if(av==null || bv==null) return (av==null && bv==null) ? 0 : (av==null ? 1 : -1);
     if(av<bv) return -1*sortDir;
     if(av>bv) return 1*sortDir;
     return 0;
