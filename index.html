@@ -827,7 +827,7 @@
     .hero { padding: 16pt 0 8pt; }
     h1 { font-size: 24pt; max-width: none; }
     section { margin-top: 22pt; }
-    .thesis { grid-template-columns: repeat(4, 1fr); gap: 6pt; background: none; border: none; margin-top: 16pt; }
+    .thesis { grid-template-columns: repeat(2, 1fr); gap: 6pt; background: none; border: none; margin-top: 16pt; }
     .thesis-cell { border: 1pt solid var(--line-strong); padding: 10pt; }
     .thesis-num { font-size: 22pt; }
     .cases { grid-template-columns: repeat(3, 1fr); gap: 8pt; }
@@ -978,16 +978,8 @@
         <div class="thesis-lbl">towns surveyed across <span id="t-counties">—</span> counties</div>
       </div>
       <div class="thesis-cell">
-        <div class="thesis-num" id="t-yes">—</div>
-        <div class="thesis-lbl">partner with a trail-advocacy nonprofit</div>
-      </div>
-      <div class="thesis-cell">
         <div class="thesis-num" id="t-comtb">—</div>
         <div class="thesis-lbl">Colorado nonprofits under the COMTB coalition — including COMBA, Medicine Wheel Trail Advocates &amp; BMA</div>
-      </div>
-      <div class="thesis-cell">
-        <div class="thesis-num" id="t-alone">—</div>
-        <div class="thesis-lbl" id="t-alone-lbl">—</div>
       </div>
     </div>
 
@@ -1392,20 +1384,13 @@ function renderCases(){
 /* ---------- Thesis strip stats (all computed from DATA, nothing hand-typed) ---------- */
 function renderThesisStats(){
   document.getElementById('t-total').textContent = DATA.length;
-  document.getElementById('t-yes').textContent = DATA.filter(d => d.status==="yes").length;
   document.getElementById('t-counties').textContent = new Set(DATA.map(d => d.county)).size;
   document.getElementById('t-comtb').textContent = COMTB_MEMBER_COUNT;
   document.getElementById('t-comtb-inline').textContent = COMTB_MEMBER_COUNT;
 
-  // "Go it alone" stat: every Douglas County town in this survey with no trail-advocacy partner.
-  // It used to count only towns flagged `foothills`, which left Parker out and made the number read
-  // as "2" when Parker has no partner either (corrected Oct. 2026). The label says "in this survey"
-  // because other Douglas County towns (Lone Tree, Castle Pines, Larkspur) were not surveyed.
-  // Recalculates automatically if a Douglas County row is added, changed, or removed.
-  const alone = DATA.filter(d => d.county==="Douglas" && d.status==="no");
-  document.getElementById('t-alone').textContent = alone.length;
-  document.getElementById('t-alone-lbl').textContent =
-    `Douglas County communities in this survey that still go it alone — ${joinNames(alone.map(d => d.town))}`;
+  // Two strip cells (a partner count and a Douglas County "go it alone" count) were removed at the
+  // owner's request in Oct. 2026 because they read as contradicting the data elsewhere on the page.
+  // Do not re-add either without the owner's say-so.
 
   // Castle Rock's mileage in the closing prose, read from DATA instead of typed separately
   const castleRock = DATA.find(d => d.town==="Castle Rock");
