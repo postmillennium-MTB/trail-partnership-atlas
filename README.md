@@ -139,7 +139,7 @@ If editing raw JavaScript isn't your thing, the fastest path is to paste the rel
 - Colorado Mountain Bike Coalition — [comtb.org](https://comtb.org) and its [member directory](https://comtb.org/colorado-trail-organizations/)
 - COMBA — [comba.org](https://www.comba.org), especially the [trail systems page](https://www.comba.org/trail-systems) and project-status pages
 - Medicine Wheel Trail Advocates — [medwheel.org](https://medwheel.org)
-- Colorado Springs Mountain Bike Association (COSMBA) — listed beside Medicine Wheel Trail Advocates as a nonprofit partner of Colorado Springs (confirmed by the author; the Singletracks article cited in that row's footnote also names COSMBA as partnering with the City). No official COSMBA website was located, so none is linked. Whether COSMBA belongs to the COMTB coalition has not been checked.
+- Colorado Springs Mountain Bike Association (COSMBA) — listed beside Medicine Wheel Trail Advocates as a nonprofit partner of Colorado Springs (confirmed by the author; the Singletracks article cited in that row's footnote also names COSMBA as partnering with the City). No official COSMBA website was located, so none is linked. COSMBA does not appear in COMTB's member directory or home-page logo list as of Oct. 29, 2026, so the page says "most" (not "nearly every" or "almost all") when it describes how many of these nonprofits belong to COMTB.
 - Boulder Mountainbike Alliance — [bma-mtb.org](https://www.bma-mtb.org)
 - CAMBA (Chequamegon Area Mountain Bike Association, WI) — [cambatrails.org](https://www.cambatrails.org)
 - Walton Family Foundation / University of Arkansas economic impact studies on Northwest Arkansas trails
