@@ -23,13 +23,14 @@ This is the most important thing in this README. The original survey was compile
 
 ## What's in the tool
 
-- **Sortable/filterable data table** — 23 towns, 8 counties, click any column header to sort, filter chips for partnership status and county, live search, and a Compact/Full detail toggle for scanning quickly on a small screen.
+- **Collapsible summary chart** — at the top, under the headline numbers: every town with a usable population figure, ranked by miles of singletrack per 10,000 residents. Click or press Enter on its heading to hide or show it (it starts open). Blue bars are towns that partner with a trail-advocacy nonprofit, orange bars are towns that don't, and Castle Rock's row is highlighted. A faded bar with a † means the mileage counts nearby Jeffco parks, so the ratio is overstated. Towns too small for a meaningful ratio, and towns with no population figure, are listed under the chart as "Not shown". Hovering, tab-focusing (arrow keys move between rows), or tapping a bar shows the arithmetic behind it. It is built from `DATA`, so it needs no edits when a town is added. See [The summary chart](#the-summary-chart) below.
+- **Sortable/filterable data table** — 23 towns, 8 counties, click any column header to sort, filter chips for partnership status and county, live search, and a Compact/Full detail toggle. On a phone, Full detail is a stack of cards and Compact is a dense one-row-per-town table you can sort by tapping its headers.
 - **Population and miles-per-10,000-residents columns** — each town's population and its singletrack mileage divided by it, sortable like the rest. See [Population and the per-capita column](#population-and-the-per-capita-column) for what the number can and can't say.
 - **Row footnotes** — any row can carry a numbered footnote (a small marker beside its miles and a matching line under the table). Castle Rock uses one to say its 40 miles excludes the hiking-only Lost Canyon Ranch Open Space. Footnotes follow the filters, so a filtered table never shows a note for a row that isn't on screen.
 - **Search and social-preview tags, and a license footer** — the page carries a description, Open Graph and Twitter-card tags (matching the PMR wrapper page), a phone-browser `theme-color` that follows the active theme, and the PMR license line at the bottom. See [License](#license).
 - **Per-row source citations** — most rows carry a direct link to the town's own parks/trails page or the news article the entry is based on, shown as a small "Source ↗" link under the town's note. Rows without one just don't show the link.
 - **Three color themes** (Blue Hour / Alpenglow / Meridian), consistent with the rest of the PMR tool suite.
-- **Mobile-first table** — below 680px the table becomes stacked cards with a colored left edge (green = partner, red = no partner) instead of a horizontally-scrolling grid.
+- **Mobile-first table** — below 680px the table becomes stacked cards with a colored left edge (green = partner, red = no partner) instead of a horizontally-scrolling grid. The **Compact** toggle on a phone switches to a real table instead: one row per town showing partner?, miles, per-10k and confidence (county sits under the town name, and the note, source link, nonprofit and population columns are left out), with short column headers you can tap to sort. It is about 85% shorter than the card view (roughly 1,350px against 9,000px for all 23 towns). Before October 29, 2026 it only hid a few lines per card and was just 15% shorter, so it looked almost the same.
 - **Write-up section** making the "why partner" case: grant eligibility, volunteer labor, trail design/sustainability, and political constituency — anchored with real numbers from COMBA, Medicine Wheel, Boulder Mountainbike Alliance, CAMBA (Wisconsin), and Northwest Arkansas/Bentonville, plus a pointer to the [Trail Advocacy Atlas](https://www.postmillenniumrenaissance.com/trail-advocacy-atlas/) for the national picture (440+ nonprofit trail organizations catalogued).
 - **COMTB callout** — links to the Colorado Mountain Bike Coalition and its member directory, framing local partnerships as access to a statewide network, not just a local volunteer crew.
 
@@ -74,6 +75,25 @@ Every row carries a `conf` value (1–3) rendered as a Low/Medium/High badge:
 - Estimates for fast-growing towns move quickly. A 2020 count would flatter Castle Rock and Parker (both grew 13–15% since); that is why the incorporated places use the newest vintage.
 
 **To refresh it:** download the newest `sub-est20XX.csv` from the Census Bureau's population-estimates datasets, find each town's row (state `08`, summary level `162`, name like `Castle Rock town`), copy the latest `POPESTIMATE` column into the row's `pop`, and update `POP_YEAR` to match. The Census API now asks for a key; the flat CSV does not. (The October 2026 numbers were pulled and cross-checked by script, not typed.)
+
+---
+
+## The summary chart
+
+**What it plots:** the same ratio as the table's "Mi. per 10k residents" column (miles ÷ population × 10,000), for every town that has one, ranked high to low. Which towns appear, their order, the axis, and the "Not shown" line under the chart are all worked out from `DATA` each time the page loads, so adding or editing a town needs no chart change.
+
+**Reading it:**
+- The scale is linear and starts at zero, on purpose. Evergreen and Golden dwarf the plains suburbs (0.07 to 0.31 per 10,000), and that spread is real. A log scale would make the suburbs look comparable to the destination towns, which would mislead. The faded † bars are the honest explanation for the two biggest bars: their mileage is in nearby Jeffco parks.
+- Blue bars are partner towns and orange bars are towns with no trail-advocacy partner. These colors are deliberately not the green/red of the table's Yes/No badges: a red/green pair is the classic color-blind trap, and blue/orange is not.
+- Color is never the only signal. A filled dot marks a partner and a ring marks a non-partner, the value is printed at the tip of every bar, and the table below has every number.
+
+**Colors were validated, not eyeballed.** Each theme's pair was run through the dataviz skill's palette checker against that theme's actual panel color: color-blind separation ΔE 24.7 or better (the target is 8), normal-vision separation above 31, and contrast over 3:1. Blue Hour and Meridian use `#2a78d6` / `#eb6834`; Alpenglow uses its dark-surface steps `#3987e5` / `#d95926`; print uses a darker blue (`#1c5cab`) so the two bars also differ as greys on a black-and-white printout.
+
+**Tooltips enhance, they never gate.** Hover, keyboard focus (Tab into the list, then the up and down arrow keys; Escape closes) or a tap shows the arithmetic ("48 mi ÷ 20,390 residents"). Everything a tooltip says is already on the row or in the table.
+
+**Collapsing** uses a native `<details>` element, so it works by keyboard and screen reader with no script. It starts open; to start it collapsed, remove `open` from `<details class="chart-panel" id="chartPanel">`.
+
+**Printing:** an open chart prints on page 1 under the headline numbers, a collapsed one stays collapsed. It is sized to fit in the space left on page 1. If you add content above it, check that it still fits: when it doesn't, the chart is kept whole and moves to page 2, which leaves page 1 half empty and adds a page.
 
 ---
 
@@ -153,10 +173,12 @@ If editing raw JavaScript isn't your thing, the fastest path is to paste the rel
 
 If you're pasting this file into a new Claude conversation to make a change, here's the shape of it: town data lives in `DATA`, the national case-study cards live in `CASE_STUDIES`, and the color themes live in `THEMES` — all three are plain arrays near the top of the `<script>` block. Everything visible on the page (the table, the filters, the county chips, the case-study cards, the theme swatches, and all four thesis-strip numbers) is generated from those three arrays at load time; none of it is hand-typed into the HTML. That means almost any data change — a new town, a new case study, a new theme, a new source link — is a one-line edit to an array, not a hunt through multiple sections of the file.
 
-Three things in the file are **not** driven by `DATA` and are easy to let drift:
+A few things in the file are **not** driven by `DATA` and are easy to let drift:
 - **The `<head>` description and social-preview tags** deliberately match the PMR wrapper page at `postmillenniumrenaissance.com/trail-partnership-atlas/` (same description, title and the site-wide `og-image.jpg`), so a link to this file previews the same as a link to the branded page. If you change one, change the other. There is no `og:url`, so a preview uses whichever address was actually shared.
 - **The numbers in the write-up prose** (for example the volunteer-hour value and the Trail Advocacy Atlas count) are typed text, not computed. Re-check them on each annual pass.
-- **The settings above `END OF DATA`** (`POP_YEAR`, `PER_CAPITA_UNIT`, `PER_CAPITA_LABEL`, `MIN_POP_FOR_RATIO`) feed the table, the legend under it, and the column header, so change them there and nowhere else.
+- **The settings above `END OF DATA`** (`POP_YEAR`, `PER_CAPITA_UNIT`, `PER_CAPITA_LABEL`, `MIN_POP_FOR_RATIO`, and the chart's `CHART_HIGHLIGHT_TOWN`, `CHART_MAX_TICK_INTERVALS`, `CHART_MIN_BAR_PCT`) feed the table, the chart, the legends and the column header, so change them there and nowhere else.
+- **The chart's two series colors** (`--chart-partner`, `--chart-none`) live in each theme's CSS block and in the print block, not in JavaScript. Each pair was validated against that theme's panel color, so re-validate if you change one or add a theme. See [The summary chart](#the-summary-chart).
+- **The short column labels** used by the phone compact view are the `.th-short` spans in the table header. If you rename a column, update its short label too; the long label (`.th-full`) is what the print header and sort description use.
 
 ---
 
@@ -170,4 +192,4 @@ The page and this repository are licensed under the [PolyForm Noncommercial Lice
 
 Built for **Post Millennium Renaissance MTB** — [postmillenniumrenaissance.com](https://www.postmillenniumrenaissance.com) — as part of ongoing trail advocacy work in Castle Rock, Colorado. No build tooling, no dependencies, single HTML file, deploys directly to GitHub Pages.
 
-*Last substantive data update: October 28, 2026 (23 towns, 8 counties — added population and per-capita columns, refreshed the Conifer and Centennial notes, replaced the dead Black Hawk link, updated the Trail Advocacy Atlas count to 440+, set the volunteer-hour value to Independent Sector's 2025 figure of $36.14, reworded Castle Rock's note to "no mountain-bike trail-advocacy nonprofit partner", added a footnote that its 40 miles excludes Lost Canyon Ranch, added the mileage-accuracy caveat, search and social-preview tags, and the license footer). Previous: August 2026 (added Conifer, refreshed Idaho Springs mileage, added source citations to every row). If you're reading this more than a few months later, assume at least a few mileage figures and possibly a partnership status or two have changed — reverify before citing anything in a formal setting.*
+*Last substantive update: October 29, 2026 (added the collapsible summary chart and rebuilt the phone Compact view as a dense sortable table). Last substantive data update: October 28, 2026 (23 towns, 8 counties — added population and per-capita columns, refreshed the Conifer and Centennial notes, replaced the dead Black Hawk link, updated the Trail Advocacy Atlas count to 440+, set the volunteer-hour value to Independent Sector's 2025 figure of $36.14, reworded Castle Rock's note to "no mountain-bike trail-advocacy nonprofit partner", added a footnote that its 40 miles excludes Lost Canyon Ranch, added the mileage-accuracy caveat, search and social-preview tags, and the license footer). Previous: August 2026 (added Conifer, refreshed Idaho Springs mileage, added source citations to every row). If you're reading this more than a few months later, assume at least a few mileage figures and possibly a partnership status or two have changed — reverify before citing anything in a formal setting.*

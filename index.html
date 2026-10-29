@@ -61,6 +61,11 @@
     --partial: #7d5500;
     --partial-bg: #f2e4c2;
     --shadow: rgba(14, 34, 56, 0.14);
+    /* Summary-chart series colours (partner / no partner). They carry meaning, so they never follow the
+       theme accent. Each pair was run through the dataviz palette validator against this theme's panel
+       colour: colour-blind separation ΔE 24+, contrast over 3:1. Dark themes get their own steps. */
+    --chart-partner: #2a78d6;
+    --chart-none: #eb6834;
   }
 
   /* Scheme 2: ALPENGLOW — dusk over the Divide, deep indigo + warm rim light */
@@ -81,6 +86,8 @@
     --partial: #e0c06a;
     --partial-bg: #35301c;
     --shadow: rgba(0, 0, 0, 0.45);
+    --chart-partner: #3987e5;   /* dark-surface steps of the same two hues; validated on #1e212b */
+    --chart-none: #d95926;
   }
 
   /* Scheme 3: MERIDIAN — high-noon USGS quad sheet, clean paper + survey-blue */
@@ -101,6 +108,8 @@
     --partial: #9a6d10;
     --partial-bg: #f4e8c8;
     --shadow: rgba(30, 55, 75, 0.12);
+    --chart-partner: #2a78d6;
+    --chart-none: #eb6834;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -467,6 +476,70 @@
   .footnotes strong { color: var(--ink); }
   .footnotes a { color: var(--accent); text-underline-offset: 2px; }
 
+  /* Visually hidden but still read by screen readers */
+  .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+  /* Short column labels and the county caption exist only for the phone compact view (see the phone block) */
+  .th-short, .town-county { display: none; }
+
+  /* ---------- Summary chart (collapsible) ----------
+     Ranked horizontal bars of miles per 10k residents, built from DATA by renderChart(): plain HTML and CSS,
+     no chart library. Marks follow the dataviz spec: bars thinner than 24px, 4px rounded tip with a square
+     baseline end, hairline recessive gridlines, the value printed at the bar tip. Collapsing uses a native
+     <details>, so keyboard and screen-reader behaviour come for free. */
+  .chart-panel { margin-top: 40px; background: var(--bg-panel); border: 1px solid var(--line); border-radius: var(--radius); }
+  .chart-sum { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 56px; padding: 12px 18px; cursor: pointer; }
+  .chart-sum::-webkit-details-marker { display: none; }
+  .chart-sum:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
+  .chart-eyebrow { display: block; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+  .chart-title { display: block; font-family: var(--font-display); font-size: 1.12rem; font-weight: 700; line-height: 1.25; }
+  .chart-toggle { display: inline-flex; align-items: center; gap: 8px; flex: none; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); white-space: nowrap; }
+  .chart-toggle::before { content: "Show"; }
+  .chart-panel[open] .chart-toggle::before { content: "Hide"; }
+  .chart-caret { display: inline-block; transition: transform var(--transition); }
+  .chart-panel[open] .chart-caret { transform: rotate(180deg); }
+  .chart-panel[open] .chart-sum { border-bottom: 1px solid var(--line); }
+  .chart-body { position: relative; padding: 14px 18px 18px; }
+  .chart-sub { font-size: 0.84rem; color: var(--ink-soft); max-width: 70ch; margin-bottom: 12px; }
+  .rc-legend { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0 0 12px; font-size: 0.8rem; color: var(--ink); }
+  .rc-legend li { display: inline-flex; align-items: center; gap: 7px; }
+  .rc-swatch { flex: none; width: 22px; height: 10px; border-radius: 0 4px 4px 0; }
+
+  /* Shared by the rows AND the axis row (which is a sibling of the list), so they live on the common parent:
+     the label column's width, and the room right of the plot for the value printed at the longest bar's tip. */
+  .chart-body { --rc-label-w: 8.6rem; --rc-gutter: 3.7rem; }
+  .rc { list-style: none; margin: 0; padding: 0; }
+  .rc-row { display: grid; grid-template-columns: var(--rc-label-w) 1fr; align-items: stretch; min-height: 26px; outline-offset: -2px; }
+  .rc-row:hover, .rc-row:focus-visible { background: var(--bg-panel-alt); }
+  .rc-row:focus-visible { outline: 3px solid var(--accent); }
+  .rc-row.rc-hl { background: var(--bg-panel-alt); box-shadow: inset 3px 0 0 var(--accent); }
+  .rc-label { display: flex; align-items: center; gap: 8px; padding: 2px 8px; font-size: 0.82rem; line-height: 1.15; color: var(--ink); }
+  .rc-hl .rc-label { font-weight: 700; }
+  /* Series colour sits on the mark beside the text, never on the text. The no-partner dot is a ring, so
+     the two series also differ by shape, not colour alone. */
+  .rc-dot { flex: none; width: 9px; height: 9px; box-sizing: border-box; border-radius: 50%; }
+  .rc-partner { background: var(--chart-partner); }
+  .rc-none { background: var(--chart-none); }
+  .rc-dot.rc-none { background: transparent; border: 2px solid var(--chart-none); }
+  /* The plot: hairline gridlines every axis step. --rc-n (intervals) is set on the list by renderChart(). */
+  .rc-plot { position: relative; margin-right: var(--rc-gutter); border-right: 1px solid var(--line);
+    background-image: linear-gradient(to right, var(--line) 1px, transparent 1px);
+    background-size: calc(100% / var(--rc-n, 1)) 100%; background-repeat: repeat-x; }
+  .rc-bar { position: absolute; left: 0; top: 50%; height: 14px; transform: translateY(-50%); border-radius: 0 4px 4px 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .rc-bar.rc-flag { opacity: 0.55; }   /* faded bar + dagger = mileage counts nearby Jeffco parks (overstated) */
+  .rc-row:hover .rc-bar.rc-flag, .rc-row:focus-visible .rc-bar.rc-flag { opacity: 0.8; }
+  .rc-val { position: absolute; top: 50%; transform: translateY(-50%); margin-left: 7px; font-family: var(--font-mono); font-size: 0.76rem; font-weight: 600; color: var(--ink); white-space: nowrap; }
+  .rc-axisrow { display: grid; grid-template-columns: var(--rc-label-w) 1fr; margin-top: 2px; }
+  .rc-axis { position: relative; margin-right: var(--rc-gutter); height: 22px; border-top: 1px solid var(--line-strong); }
+  .rc-tick { position: absolute; top: 4px; transform: translateX(-50%); font-family: var(--font-mono); font-size: 0.66rem; color: var(--ink-soft); }
+  .chart-note { margin-top: 10px; font-size: 0.78rem; color: var(--ink-soft); line-height: 1.5; max-width: 80ch; }
+  /* Hover/focus/tap readout: value first, then the town, then the arithmetic */
+  .rc-tip { position: absolute; z-index: 5; pointer-events: none; width: max-content; max-width: min(260px, calc(100% - 8px)); padding: 9px 11px; background: var(--ink); color: var(--bg-panel); border-radius: 4px; font-size: 0.78rem; line-height: 1.4; box-shadow: 0 4px 14px var(--shadow); }
+  .rc-tip[hidden] { display: none; }
+  .rc-tip-val { font-family: var(--font-mono); font-size: 0.95rem; font-weight: 700; }
+  .rc-tip-name { opacity: 0.9; }
+  .rc-tip-math, .rc-tip-flag { margin-top: 4px; font-size: 0.74rem; opacity: 0.85; }
+
   /* ---------- Prose (write-up) ---------- */
   .prose { max-width: 72ch; }
   .prose p { margin-bottom: 18px; font-size: 1.02rem; }
@@ -643,8 +716,51 @@
     #grid td[data-label] { display: flex; align-items: center; gap: 4px; padding: 5px 0 !important; }
     .miles-bar { display: none; }  /* redundant on cards */
 
-    /* compact mode on mobile just drops the note; cards already handle the rest */
-    body.compact #grid td:nth-child(1) { margin-bottom: 3px; }
+    /* ---- Compact view on phones: a dense, sortable table instead of cards ----
+       Compact used to hide a few lines of each card, so it was only ~15% shorter than Full detail and
+       looked almost the same. Now it drops the cards: one short row per town with the four things that
+       matter (partner?, miles, per-10k, confidence), and the column headers come back (they are hidden
+       in card view) so tapping one sorts the table. These rules out-rank the card rules above by
+       specificity; the !important pairs are there because the card rules use !important too. */
+    body.compact .table-scroll { border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-panel); }
+    body.compact #grid { display: table; width: 100%; table-layout: fixed; }
+    body.compact #grid thead { display: table-header-group; position: static; }
+    body.compact #grid tbody { display: table-row-group; }
+    body.compact #grid tr { display: table-row; }
+    body.compact #grid th, body.compact #grid td { display: table-cell; width: auto; }
+    /* county moves under the town name as a caption; org and population stay out */
+    body.compact #grid .col-org, body.compact #grid .col-pop,
+    body.compact #grid th[data-sort="county"], body.compact #grid td[data-label="County"] { display: none; }
+    /* fixed layout reads widths from the header row; the five shown columns add to 100% */
+    body.compact #grid th[data-sort="town"]      { width: 30%; }
+    body.compact #grid th[data-sort="status"]    { width: 18%; }
+    body.compact #grid th[data-sort="miles"]     { width: 13%; }
+    body.compact #grid th[data-sort="perCapita"] { width: 18%; }
+    body.compact #grid th[data-sort="conf"]      { width: 21%; }
+    /* no letter-spacing and a small caret keep each label and its sort arrow on one line (the base rule already
+       forbids wrapping); the short labels above were chosen to fit these widths at 390px */
+    body.compact #grid thead th { padding: 10px 4px; font-size: 0.6rem; letter-spacing: 0; background: var(--bg-panel-alt); position: sticky; top: 0; z-index: 2; }
+    body.compact #grid thead th .sortcaret { font-size: 0.55rem; margin-left: 1px; }
+    body.compact #grid thead th:first-child { padding-left: 9px; }
+    body.compact #grid .th-full { display: none; }      /* long labels won't fit; the short ones do */
+    body.compact #grid .th-short { display: inline; }
+    body.compact #grid tbody tr { margin: 0; padding: 0; border: 0; border-radius: 0; box-shadow: none; background: var(--bg-panel); }
+    body.compact #grid tbody td { padding: 9px 4px !important; border-bottom: 1px solid var(--line) !important; vertical-align: middle; }
+    body.compact #grid tbody td:first-child { padding-left: 9px !important; margin-bottom: 0; }
+    /* the card's coloured left edge moves to the first cell, so partner/no-partner still reads at a glance */
+    body.compact #grid tbody tr[data-status="yes"] td:first-child { border-left: 4px solid var(--yes) !important; }
+    body.compact #grid tbody tr[data-status="no"] td:first-child { border-left: 4px solid var(--no) !important; }
+    body.compact #grid td[data-label]::before { content: none; }   /* the headers label the columns now */
+    body.compact .town-name { font-size: 0.92rem !important; line-height: 1.2; }
+    body.compact .town-source, body.compact .unit { display: none; }
+    body.compact .town-county { display: block; margin-top: 2px; font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); }
+
+    /* ---- Summary chart on phones: narrower label column and gutter ---- */
+    .chart-panel { margin-top: 28px; }
+    .chart-sum { padding: 12px 14px; }
+    .chart-title { font-size: 1.02rem; }
+    .chart-body { padding: 12px 14px 16px; --rc-label-w: 7rem; --rc-gutter: 3.3rem; }
+    .rc-label { padding: 2px 4px; gap: 6px; font-size: 0.78rem; }
   }
 
   @media screen and (max-width: 400px) {
@@ -690,6 +806,8 @@
       --no: #9b1c0c;  --no-bg: #ffffff;
       --partial: #6e4c00; --partial-bg: #ffffff;
       --shadow: transparent;
+      --chart-partner: #1c5cab;   /* darker blue so the two bars also differ as greys on a black-and-white printout */
+      --chart-none: #eb6834;
     }
     html { font-size: 14px; }  /* 1rem = 10.5pt; every rem size in the file scales from here */
     body { background: #fff; color: #111; padding: 0; line-height: 1.45; }
@@ -761,6 +879,32 @@
     .eyebrow, .sec-idx, .case-tag, .foot-meta, .thesis-lbl, .case-loc, .case-stat-lbl { font-size: 8pt; }
     .coalition-note, .caveat, .case p, .disclaimer, .footnotes { font-size: 8.5pt; }
     .footnotes, .pmr-license { break-inside: avoid; }
+
+    /* ---- Summary chart: prints only if left open (a collapsed chart stays collapsed on paper) ----
+       Box-shadows are switched off for print, so the Castle Rock highlight uses a border instead. Bars and
+       gridlines are backgrounds, so they are marked "print exactly" or some browsers would drop them. */
+    /* Sized to fit on page 1 under the hero. Kept whole (break-inside) because a chart split across two pages
+       is unreadable; if it doesn't fit it moves to the next page and leaves page 1 half empty, which is
+       what the first version did (print grew 9 -> 10 pages), so these sizes are deliberately tight. The
+       intro sentence is dropped on paper: the tooltip it points to doesn't exist there. */
+    .chart-panel { break-inside: avoid; margin-top: 10pt; }
+    .chart-sum { min-height: 0; padding: 3pt 8pt; }
+    .chart-eyebrow { display: none; }
+    .chart-title { font-size: 10pt; }
+    .chart-toggle, .rc-tip, .chart-sub, .chart-note-more { display: none !important; }
+    .chart-body { padding: 4pt 8pt 4pt; }
+    .rc-legend { margin: 0 0 3pt; gap: 1pt 10pt; font-size: 7pt; line-height: 1.25; }
+    .chart-note { margin-top: 3pt; font-size: 6.8pt; line-height: 1.3; max-width: none; }   /* the screen cap of 80ch is only ~270pt at this size */
+    .rc-row { min-height: 9.5pt; }
+    .rc-row:hover { background: none; }
+    .rc-row.rc-hl { box-shadow: none; background: none; border-left: 2.5pt solid var(--ink); }
+    .rc-label { font-size: 7.2pt; padding: 0 4pt; line-height: 1.1; }
+    .rc-bar { height: 6pt; }
+    .rc-val { font-size: 7pt; }
+    .rc-axis { height: 14pt; }
+    .rc-tick { top: 2pt; font-size: 6.5pt; }
+    .rc-plot, .rc-dot, .rc-swatch { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .rc-plot { background-image: linear-gradient(to right, #cfcfcf 1px, transparent 1px); border-right-color: #bdbdbd; }   /* the print --line is too dark for hairlines */
     .prose p { font-size: 10pt; margin-bottom: 9pt; }
     .principles p { font-size: 9.5pt; }
 
@@ -852,6 +996,31 @@
     </p>
   </header>
 
+  <!-- ============ SUMMARY CHART (collapsible) ============
+       A native <details>: click or press Enter/Space on the heading to hide or show it. Everything inside
+       is built from DATA by renderChart(); the legend is the only hand-written part. -->
+  <details class="chart-panel" id="chartPanel" open>
+    <summary class="chart-sum">
+      <span>
+        <span class="chart-eyebrow">Summary chart</span>
+        <span class="chart-title">Miles of singletrack per <span class="percap-unit">10k</span> residents</span>
+      </span>
+      <span class="chart-toggle" aria-hidden="true"><span class="chart-caret">▾</span></span>
+    </summary>
+    <div class="chart-body" id="chartBody">
+      <p class="chart-sub" id="chartSub"></p>
+      <ul class="rc-legend" aria-label="Legend">
+        <li><span class="rc-dot rc-partner" aria-hidden="true"></span> Partners with a trail-advocacy nonprofit</li>
+        <li><span class="rc-dot rc-none" aria-hidden="true"></span> No trail-advocacy partner</li>
+        <li><span class="rc-swatch rc-partner" style="opacity:.55" aria-hidden="true"></span><span class="dag" aria-hidden="true">†</span> Faded bar: mileage counts nearby Jeffco parks, so it is overstated</li>
+      </ul>
+      <ol class="rc" id="rcRows" aria-label="Towns ranked by miles of singletrack per 10,000 residents"></ol>
+      <div class="rc-axisrow" aria-hidden="true"><span></span><div class="rc-axis" id="rcAxis"></div></div>
+      <p class="chart-note" id="chartNote"></p>
+      <div class="rc-tip" id="rcTip" role="tooltip" hidden></div>
+    </div>
+  </details>
+
   <!-- ============ SECTION 01 — TABLE ============ -->
   <section id="data">
     <div class="sec-head">
@@ -885,15 +1054,17 @@
       <table id="grid">
         <thead>
           <tr>
-            <th data-sort="town" data-type="str">Town / City <span class="sortcaret">↕</span></th>
-            <th data-sort="county" data-type="str">County <span class="sortcaret">↕</span></th>
-            <th data-sort="status" data-type="status">Partner? <span class="sortcaret">↕</span></th>
-            <th data-sort="org" data-type="str" class="col-org">Nonprofit partner <span class="sortcaret">↕</span></th>
-            <th data-sort="miles" data-type="num">Singletrack mi. <span class="sortcaret">↕</span></th>
-            <th data-sort="pop" data-type="num" class="col-pop">Population <span class="sortcaret">↕</span></th>
+            <!-- .th-full is the label everywhere; .th-short is swapped in only by the phone compact view,
+                 where the full words don't fit. updatePrintContext() reads .th-full. -->
+            <th data-sort="town" data-type="str"><span class="th-full">Town / City</span><span class="th-short">Town</span> <span class="sortcaret">↕</span></th>
+            <th data-sort="county" data-type="str"><span class="th-full">County</span> <span class="sortcaret">↕</span></th>
+            <th data-sort="status" data-type="status"><span class="th-full">Partner?</span><span class="th-short">Partner?</span> <span class="sortcaret">↕</span></th>
+            <th data-sort="org" data-type="str" class="col-org"><span class="th-full">Nonprofit partner</span> <span class="sortcaret">↕</span></th>
+            <th data-sort="miles" data-type="num"><span class="th-full">Singletrack mi.</span><span class="th-short">Miles</span> <span class="sortcaret">↕</span></th>
+            <th data-sort="pop" data-type="num" class="col-pop"><span class="th-full">Population</span> <span class="sortcaret">↕</span></th>
             <!-- unit label ("10k") is filled in from PER_CAPITA_LABEL by renderPerCapitaText() -->
-            <th data-sort="perCapita" data-type="num">Mi. per <span class="percap-unit">10k</span> residents <span class="sortcaret">↕</span></th>
-            <th data-sort="conf" data-type="conf">Confidence <span class="sortcaret">↕</span></th>
+            <th data-sort="perCapita" data-type="num"><span class="th-full">Mi. per <span class="percap-unit">10k</span> residents</span><span class="th-short">Per <span class="percap-unit">10k</span></span> <span class="sortcaret">↕</span></th>
+            <th data-sort="conf" data-type="conf"><span class="th-full">Confidence</span><span class="th-short">Conf.</span> <span class="sortcaret">↕</span></th>
           </tr>
         </thead>
         <tbody id="tbody"><!-- injected --></tbody>
@@ -1099,6 +1270,14 @@ const MIN_POP_FOR_RATIO = 2500; // below this many residents the ratio prints "n
                                 // 2,500 is the Census Bureau's own urban/rural line. Set to 0 to show every ratio.
 const NEARBY_TIP = "Mileage counts nearby Jeffco Open Space parks, not trails the town owns, so this ratio is overstated.";
 
+/* ---------- Summary chart settings ---------- */
+const CHART_HIGHLIGHT_TOWN = "Castle Rock"; // the town this page argues about: its row gets a bold label and a wash.
+                                            // Must match a town name in DATA exactly; "" turns the highlight off.
+const CHART_MAX_TICK_INTERVALS = 8;         // most gridline intervals the axis may use. More than ~8 crowds the tick
+                                            // labels on a phone; fewer makes the gridlines too coarse to read.
+const CHART_MIN_BAR_PCT = 0.6;              // floor on a bar's length (% of the plot) so the smallest towns still show
+                                            // a sliver instead of disappearing.
+
 /* ================== END OF DATA — everything below is logic ================== */
 
 const maxMiles = Math.max(...DATA.map(d => d.miles));
@@ -1159,6 +1338,7 @@ function render(rows){
     <tr data-town="${d.town.toLowerCase()}" data-org="${d.org.toLowerCase()}" data-status="${d.status}" data-county="${d.county}">
       <td>
         <div class="town-name">${d.town}</div>
+        <div class="town-county">${d.county}</div>
         <div class="town-note">${d.note}</div>
         ${d.source ? `<a class="town-source" href="${d.source}" target="_blank" rel="noopener">Source ↗</a>` : ''}
       </td>
@@ -1166,7 +1346,7 @@ function render(rows){
       <td data-label="Partner?">${statusBadge(d.status)}</td>
       <td class="col-org" data-label="Partner">${d.org}</td>
       <td data-label="Singletrack">
-        <span class="miles-val">${d.miles} mi</span>${footMark(d)}
+        <span class="miles-val">${d.miles}<span class="unit"> mi</span></span>${footMark(d)}
         <!-- minimum 6% width so low-mileage towns still show a visible/tappable bar -->
         <div class="miles-bar" style="width:${Math.max(6,(d.miles/maxMiles)*100)}%"></div>
       </td>
@@ -1240,12 +1420,112 @@ function renderPerCapitaText(){
   document.getElementById('nm-towns').textContent = names(DATA.filter(d => d.pop && d.pop < MIN_POP_FOR_RATIO));
 }
 
+/* ---------- Summary chart: ranked bars of miles per 10k residents, built from DATA ----------
+   Plain HTML/CSS bars (no chart library). Which towns appear, their order, the axis and the "not shown"
+   note are all derived from DATA, so adding or editing a town needs no chart edit. */
+
+// Smallest tidy tick step (1, 2, 2.5, 5, 10 ... times a power of ten) that keeps the axis within
+// CHART_MAX_TICK_INTERVALS. Returns the step, the number of intervals, and the axis maximum.
+function niceAxis(maxVal){
+  const pow = Math.pow(10, Math.floor(Math.log10(maxVal)));
+  for(const m of [0.1, 0.2, 0.25, 0.5, 1, 2, 5, 10]){
+    const step = m * pow, intervals = Math.ceil(maxVal / step);
+    if(intervals <= CHART_MAX_TICK_INTERVALS) return { step, intervals, max: intervals * step };
+  }
+}
+function joinNames(list){ return list.length < 2 ? list.join('') : list.slice(0, -1).join(', ') + ' and ' + list[list.length - 1]; }
+
+let chartRows = [];   // towns shown in the chart, ranked; the tooltip finds a row's town here by index
+function renderChart(){
+  chartRows = DATA.filter(d => perCapita(d) !== null).sort((a, b) => perCapita(b) - perCapita(a));
+  const skipped = DATA.filter(d => perCapita(d) === null);
+  if(!chartRows.length){ document.getElementById('chartPanel').hidden = true; return; }
+  const axis = niceAxis(perCapita(chartRows[0]));
+
+  const list = document.getElementById('rcRows');
+  list.style.setProperty('--rc-n', axis.intervals);
+  // Only the first row is a tab stop; the arrow keys move between rows (see the keydown handler below),
+  // so 19 rows don't become 19 stops in front of the table.
+  list.innerHTML = chartRows.map((d, i) => {
+    const v = perCapita(d), pct = Math.max(CHART_MIN_BAR_PCT, v / axis.max * 100);
+    const series = d.status === 'yes' ? 'rc-partner' : 'rc-none';
+    return `<li class="rc-row${d.town === CHART_HIGHLIGHT_TOWN ? ' rc-hl' : ''}" tabindex="${i === 0 ? 0 : -1}" data-i="${i}">
+      <span class="rc-label"><span class="rc-dot ${series}" aria-hidden="true"></span><span>${d.town}<span class="sr-only">, ${d.status === 'yes' ? 'partner' : 'no partner'}</span></span></span>
+      <span class="rc-plot"><span class="rc-bar ${series}${d.nearby ? ' rc-flag' : ''}" style="width:${pct}%"></span><span class="rc-val" style="left:${pct}%">${fmtRatio(v)}${d.nearby ? '<span class="dag" aria-hidden="true">†</span><span class="sr-only">, overstated</span>' : ''}</span></span>
+    </li>`;
+  }).join('');
+
+  document.getElementById('rcAxis').innerHTML = Array.from({ length: axis.intervals + 1 }, (_, k) =>
+    `<span class="rc-tick" style="left:${k / axis.intervals * 100}%">${+(k * axis.step).toFixed(2)}</span>`).join('');
+
+  document.getElementById('chartSub').textContent =
+    `Ranked high to low across ${chartRows.length} of the ${DATA.length} towns. Bars start at zero. These are the same numbers as the table below; hover, focus or tap a bar to see the arithmetic.`;
+  const small = skipped.filter(d => d.pop), blank = skipped.filter(d => !d.pop), notShown = [];
+  if(small.length) notShown.push(`${joinNames(small.map(d => d.town))} (under ${MIN_POP_FOR_RATIO.toLocaleString('en-US')} residents, so the ratio is not meaningful)`);
+  if(blank.length) notShown.push(`${joinNames(blank.map(d => d.town))} (no Census population figure)`);
+  const noteEl = document.getElementById('chartNote');
+  noteEl.textContent = (notShown.length ? `Not shown: ${notShown.join('; ')}. ` : '') + `Population is the Census Bureau's July 1, ${POP_YEAR} estimate.`;
+  // The pointer to the table's notes is its own span so the print stylesheet can drop it to save a line (the notes print anyway)
+  const more = document.createElement('span');
+  more.className = 'chart-note-more';
+  more.textContent = ' See the notes under the table for what the mileage and population figures count.';
+  noteEl.appendChild(more);
+}
+
+/* Hover / keyboard-focus / tap readout. One shared tooltip: value first, then the town, then the arithmetic.
+   Built with textContent, never innerHTML. It only repeats what the row and the table already show, so
+   nothing is reachable only by hovering. */
+const rcTip = document.getElementById('rcTip'), chartBody = document.getElementById('chartBody'), rcList = document.getElementById('rcRows');
+let tipRow = -1;
+function fillChartTip(d){
+  rcTip.textContent = '';
+  const add = (cls, text) => { const el = document.createElement('div'); el.className = cls; el.textContent = text; rcTip.appendChild(el); };
+  add('rc-tip-val', `${fmtRatio(perCapita(d))} mi per ${PER_CAPITA_LABEL}${d.nearby ? ' †' : ''}`);
+  add('rc-tip-name', `${d.town} · ${d.status === 'yes' ? 'partners with a trail-advocacy nonprofit' : 'no trail-advocacy partner'}`);
+  add('rc-tip-math', `${d.miles} mi ÷ ${d.pop.toLocaleString('en-US')} residents${d.popYear && d.popYear !== POP_YEAR ? ` (${d.popYear} Census count)` : ''}`);
+  if(d.nearby) add('rc-tip-flag', '† ' + NEARBY_TIP);
+}
+function showChartTip(li, clientX, clientY){
+  const i = +li.dataset.i;
+  if(i !== tipRow){ fillChartTip(chartRows[i]); tipRow = i; }
+  rcTip.hidden = false;                                   // must be visible to be measured
+  const box = chartBody.getBoundingClientRect(), w = rcTip.offsetWidth, h = rcTip.offsetHeight;
+  let x = clientX - box.left + 14, y = clientY - box.top + 14;
+  if(x + w > box.width) x = Math.max(0, clientX - box.left - w - 14);   // flip to the other side rather than overflow the panel
+  if(y + h > box.height) y = Math.max(0, clientY - box.top - h - 14);
+  rcTip.style.left = x + 'px'; rcTip.style.top = y + 'px';
+}
+function hideChartTip(){ rcTip.hidden = true; tipRow = -1; }
+// pointerdown covers a touch tap (a tap fires no pointermove); touch pointers also "leave" the instant
+// the finger lifts, so pointerleave is ignored for touch and a tap elsewhere hides the tip instead.
+['pointermove', 'pointerdown'].forEach(type => rcList.addEventListener(type, e => {
+  const li = e.target.closest('.rc-row');
+  if(li) showChartTip(li, e.clientX, e.clientY); else hideChartTip();
+}));
+rcList.addEventListener('pointerleave', e => { if(e.pointerType !== 'touch') hideChartTip(); });
+document.addEventListener('pointerdown', e => { if(!e.target.closest('.rc')) hideChartTip(); });
+rcList.addEventListener('focusin', e => {
+  const li = e.target.closest('.rc-row'); if(!li) return;
+  const r = li.querySelector('.rc-bar').getBoundingClientRect();
+  showChartTip(li, r.right, r.top);
+});
+rcList.addEventListener('focusout', hideChartTip);
+rcList.addEventListener('keydown', e => {
+  const li = e.target.closest('.rc-row'); if(!li) return;
+  if(e.key === 'Escape'){ hideChartTip(); return; }
+  const dir = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0;
+  const next = dir && [...rcList.children][[...rcList.children].indexOf(li) + dir];
+  if(next){ e.preventDefault(); li.tabIndex = -1; next.tabIndex = 0; next.focus(); }
+});
+document.getElementById('chartPanel').addEventListener('toggle', hideChartTip);
+
 /* ---------- Build DATA-driven content before wiring up interactivity ---------- */
 renderThemeSwatches();
 renderCountyChips();
 renderCases();
 renderThesisStats();
 renderPerCapitaText();
+renderChart();
 
 /* ---------- Filter + search state ---------- */
 let filterStatus = "all", filterCounty = "all", searchQuery = "";
@@ -1279,7 +1559,7 @@ function updatePrintContext(shown){
   if(sortKey){
     const th = document.querySelector(`th[data-sort="${sortKey}"]`);
     const dirLabel = th.dataset.type==="str" ? (sortDir===1 ? "A→Z" : "Z→A") : (sortDir===1 ? "low→high" : "high→low");
-    parts.push("sorted by " + th.textContent.replace('↕','').trim() + " (" + dirLabel + ")");
+    parts.push("sorted by " + th.querySelector('.th-full').textContent.replace(/\s+/g,' ').trim() + " (" + dirLabel + ")");
   }
   if(document.body.classList.contains('compact')) parts.push("compact view");
   const n = (typeof shown==="number") ? shown : DATA.length;
