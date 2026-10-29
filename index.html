@@ -827,7 +827,7 @@
     .hero { padding: 16pt 0 8pt; }
     h1 { font-size: 24pt; max-width: none; }
     section { margin-top: 22pt; }
-    .thesis { grid-template-columns: repeat(4, 1fr); gap: 6pt; background: none; border: none; margin-top: 16pt; }
+    .thesis { grid-template-columns: repeat(2, 1fr); gap: 6pt; background: none; border: none; margin-top: 16pt; }
     .thesis-cell { border: 1pt solid var(--line-strong); padding: 10pt; }
     .thesis-num { font-size: 22pt; }
     .cases { grid-template-columns: repeat(3, 1fr); gap: 8pt; }
@@ -842,7 +842,18 @@
     thead th { position: static; font-size: 7.5pt; padding: 6pt 5pt; background: var(--bg-panel-alt); border-bottom: 1.5pt solid var(--line-strong); white-space: normal; }
     tbody td { padding: 6pt 5pt; border-bottom: 0.75pt solid var(--line); }
     thead { display: table-header-group; }   /* repeats the header on every page */
-    tr, .case, .thesis-cell, .coalition-note, .caveat, .pullquote, .principles li { break-inside: avoid; }
+    tr, .case, .thesis-cell, .coalition-note, .pullquote, .principles li { break-inside: avoid; }
+    /* The two table caveats are allowed to split across a page break. They used to be kept whole, but
+       then adding one footnote line under the table pushed a whole caveat onto the next page, left a
+       blank gap behind it and added a tenth page. orphans/widows stop a split from leaving a stray line. */
+    .caveat { orphans: 3; widows: 3; }
+    /* Print-only trims to the numbered points and pull-quote (about 50pt in all). The case-study cards are
+       kept whole, so a few lines of growth above them can push the whole card row onto the next page and
+       add a page; this headroom keeps that from happening. Screen spacing is untouched. */
+    .principles { margin: 12px 0; }
+    .principles li { padding: 11px 0 11px 54px; }
+    .principles li::before { top: 11px; }
+    .pullquote { margin: 18px 0; }
     /* Fixed layout so these widths are actually honored. With auto layout, adding the two population
        columns squeezed the town column to ~1.6in, every note wrapped tall, and the printout grew from
        8 to 10 pages. Widths are % of the page and sum to 100 with every column showing; compact view
@@ -978,21 +989,13 @@
         <div class="thesis-lbl">towns surveyed across <span id="t-counties">—</span> counties</div>
       </div>
       <div class="thesis-cell">
-        <div class="thesis-num" id="t-yes">—</div>
-        <div class="thesis-lbl">partner with a trail-advocacy nonprofit</div>
-      </div>
-      <div class="thesis-cell">
         <div class="thesis-num" id="t-comtb">—</div>
         <div class="thesis-lbl">Colorado nonprofits under the COMTB coalition — including COMBA, Medicine Wheel Trail Advocates &amp; BMA</div>
-      </div>
-      <div class="thesis-cell">
-        <div class="thesis-num" id="t-alone">—</div>
-        <div class="thesis-lbl" id="t-alone-lbl">—</div>
       </div>
     </div>
 
     <p class="coalition-note">
-      Nearly every mountain-bike trail nonprofit in this survey belongs to one umbrella group: the <a href="https://comtb.org" target="_blank" rel="noopener"><strong>Colorado Mountain Bike Coalition (COMTB)</strong></a> — a statewide coalition of <span id="t-comtb-inline">20+</span> nonprofit trail organizations whose members include COMBA, Medicine Wheel Trail Advocates, and Boulder Mountainbike Alliance. When a town partners with one of these groups, it plugs into a statewide network of shared expertise, grant know-how, and political weight. See the <a href="https://comtb.org/colorado-trail-organizations/" target="_blank" rel="noopener">full member directory</a>.
+      Most mountain-bike trail nonprofits in this survey belong to one umbrella group: the <a href="https://comtb.org" target="_blank" rel="noopener"><strong>Colorado Mountain Bike Coalition (COMTB)</strong></a> — a statewide coalition of <span id="t-comtb-inline">20+</span> nonprofit trail organizations whose members include COMBA, Medicine Wheel Trail Advocates, and Boulder Mountainbike Alliance. When a town partners with one of these groups, it plugs into a statewide network of shared expertise, grant know-how, and political weight. See the <a href="https://comtb.org/colorado-trail-organizations/" target="_blank" rel="noopener">full member directory</a>.
     </p>
   </header>
 
@@ -1129,7 +1132,7 @@
       <div class="cases" id="cases"><!-- injected from CASE_STUDIES by renderCases() --></div>
 
       <h3>The coalition behind the partners</h3>
-      <p>One more structural point makes the Colorado case especially strong: the nonprofits aren't isolated local clubs. Almost all of them belong to the <em>Colorado Mountain Bike Coalition (COMTB)</em> — a statewide coalition of more than 20 nonprofit trail organizations, with COMBA, Medicine Wheel Trail Advocates, and Boulder Mountainbike Alliance among its members and on its board. When a town partners with any one of these groups, it isn't just hiring a local volunteer crew; it's plugging into a statewide brain trust that shares grant-writing expertise, trail-design standards, land-manager relationships, and legislative advocacy for public trail funding. A parks department going it alone forfeits access to that entire network.</p>
+      <p>One more structural point makes the Colorado case especially strong: the nonprofits aren't isolated local clubs. Most of them belong to the <em>Colorado Mountain Bike Coalition (COMTB)</em> — a statewide coalition of more than 20 nonprofit trail organizations, with COMBA, Medicine Wheel Trail Advocates, and Boulder Mountainbike Alliance among its members and on its board. When a town partners with any one of these groups, it isn't just hiring a local volunteer crew; it's plugging into a statewide brain trust that shares grant-writing expertise, trail-design standards, land-manager relationships, and legislative advocacy for public trail funding. A parks department going it alone forfeits access to that entire network.</p>
 
       <h3>What this means for Castle Rock</h3>
       <p>Castle Rock has roughly <span id="cr-miles">—</span> miles of singletrack and a genuine asset in its foothills-and-mesa terrain — the kind of ground that <em>rewards</em> good trail design. It hires professional contractors like Timberline Trail Craft for construction, so the objection was never about trusting outside builders. Yet it remains one of only two Douglas County foothills communities in this survey — alongside Highlands Ranch, whose trails are run by a homeowners association rather than a trail-advocacy nonprofit — sitting on bikeable terrain without a COMBA or COMTB-member partner.</p>
@@ -1189,7 +1192,7 @@ const DATA = [
   { town:"Evergreen", county:"Jefferson", status:"yes", org:"COMBA", miles:28, conf:2, pop:9307, popYear:2020, nearby:true, source:"https://www.evergreenrecreation.com/trails", note:"Alderfer/Three Sisters, Elk Meadow, Flying J. Unincorporated." },
   { town:"Arvada", county:"Jefferson", status:"no", org:"None within city limits", miles:3, conf:2, pop:122901, source:"https://www.arvadaco.gov/508/Parks-Trails-and-Open-Space", note:"White Ranch (20+ mi, Jeffco/COMBA-adjacent) is nearby but outside the boundary." },
   { town:"Wheat Ridge", county:"Jefferson", status:"no", org:"None", miles:1, conf:2, pop:32081, source:"https://www.jeffco.us/1207/Crown-Hill-Park", note:"Crown Hill trails are paved." },
-  { town:"Colorado Springs", county:"El Paso", status:"yes", org:"Medicine Wheel Trail Advocates", miles:100, conf:3, pop:494743, source:"https://coloradosprings.gov/parks-trails-open-space", note:"33 volunteer dig dates in 2024; 7 on city Parks property. Palmer, Ute Valley, Red Rock Canyon, Stratton." },
+  { town:"Colorado Springs", county:"El Paso", status:"yes", org:"Medicine Wheel Trail Advocates and Colorado Springs Mountain Bike Association (COSMBA)", miles:100, conf:3, pop:494743, source:"https://coloradosprings.gov/parks-trails-open-space", note:"33 volunteer dig dates in 2024; 7 on city Parks property. Palmer, Ute Valley, Red Rock Canyon, Stratton.", foot:"Planned additions are not added to the 100 miles above. <a href=\"https://www.singletracks.com/mtb-trails/colorado-springs-is-working-on-75-miles-of-new-mtb-trails-and-maybe-even-a-lift-served-bike-park/\" target=\"_blank\" rel=\"noopener\">Singletracks (Jan. 29, 2025)</a> reported that the City was working on more than 70 miles of new and newly bike-legal trail across several open spaces and was discussing a lift-served bike park in a reclaimed quarry. It names the Colorado Springs Mountain Bike Association (COSMBA) as partnering with the City, mixes multi-use and bike-specific trail, and gives no firm completion dates." },
   { town:"Monument", county:"El Paso", status:"yes", org:"Medicine Wheel Trail Advocates", miles:8, conf:3, pop:13813, source:"https://townofmonument.org/277/Parks-and-Open-Space-Department", note:"Medicine Wheel Trail Advocates is leading the FL7-to-Monument Trail connector." },
   { town:"Thornton", county:"Adams", status:"no", org:"None", miles:2, conf:2, pop:147766, source:"https://www.thorntonco.gov/parks-recreation/parks-planning", note:"Extensive trail mileage city-wide but overwhelmingly paved greenway." },
   { town:"Brighton", county:"Adams", status:"no", org:"None", miles:1, conf:1, pop:45395, source:"https://www.brightonco.gov/254/Parks-Recreation", note:"Plains terrain; paved-dominant. Not deeply verified." },
@@ -1392,20 +1395,13 @@ function renderCases(){
 /* ---------- Thesis strip stats (all computed from DATA, nothing hand-typed) ---------- */
 function renderThesisStats(){
   document.getElementById('t-total').textContent = DATA.length;
-  document.getElementById('t-yes').textContent = DATA.filter(d => d.status==="yes").length;
   document.getElementById('t-counties').textContent = new Set(DATA.map(d => d.county)).size;
   document.getElementById('t-comtb').textContent = COMTB_MEMBER_COUNT;
   document.getElementById('t-comtb-inline').textContent = COMTB_MEMBER_COUNT;
 
-  // "Go it alone" stat: every Douglas County town in this survey with no trail-advocacy partner.
-  // It used to count only towns flagged `foothills`, which left Parker out and made the number read
-  // as "2" when Parker has no partner either (corrected Oct. 2026). The label says "in this survey"
-  // because other Douglas County towns (Lone Tree, Castle Pines, Larkspur) were not surveyed.
-  // Recalculates automatically if a Douglas County row is added, changed, or removed.
-  const alone = DATA.filter(d => d.county==="Douglas" && d.status==="no");
-  document.getElementById('t-alone').textContent = alone.length;
-  document.getElementById('t-alone-lbl').textContent =
-    `Douglas County communities in this survey that still go it alone — ${joinNames(alone.map(d => d.town))}`;
+  // Two strip cells (a partner count and a Douglas County "go it alone" count) were removed at the
+  // owner's request in Oct. 2026 because they read as contradicting the data elsewhere on the page.
+  // Do not re-add either without the owner's say-so.
 
   // Castle Rock's mileage in the closing prose, read from DATA instead of typed separately
   const castleRock = DATA.find(d => d.town==="Castle Rock");
